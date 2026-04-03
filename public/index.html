@@ -15,6 +15,13 @@
       --cyan:#06d6a0; --orange:#ff7043; --purple:#7c5cfc; --pink:#ff4d88;
       --blue:#4da6ff; --yellow:#ffd166;
     }
+    .light-mode {
+      --bg-base:#f5f5f5; --bg-card:rgba(0,0,0,0.05);
+      --border:rgba(0,0,0,0.12); --border-bright:rgba(0,0,0,0.25);
+      --text-primary:#111111; --text-secondary:#333333; --text-muted:#555555;
+      --cyan:#06d6a0; --orange:#ff7043; --purple:#7c5cfc; --pink:#ff4d88;
+      --blue:#4da6ff; --yellow:#ffd166;
+    }
     html,body { width:100%; height:100%; background:var(--bg-base); color:var(--text-primary); font-family:'Inter',sans-serif; overflow:hidden; user-select:none; }
     #app { display:grid; grid-template-rows:52px 1fr auto; height:100vh; }
 
@@ -52,7 +59,7 @@
 
     /* BUTTON BAR */
     #btn-bar { display:flex; gap:8px; align-items:center; padding:8px 16px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.015); flex-shrink:0; flex-wrap:wrap; }
-    .action-btn { padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid transparent; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; white-space:nowrap; }
+    .action-btn { padding:5px 10px; border-radius:6px; font-size:11px; font-weight:600; border:1px solid transparent; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; white-space:nowrap; background:linear-gradient(135deg,var(--purple),var(--blue)); color:#fff; }
     .action-btn:active { transform:scale(.97); }
     .action-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
     #btn-plot { background:linear-gradient(135deg,#7c5cfc,#4da6ff); color:#fff; box-shadow:0 4px 16px rgba(124,92,252,0.3); }
@@ -157,16 +164,16 @@
 <body>
 <div id="app">
   <header id="header">
-    <div class="logo">∑</div>
+    <div class="logo">LSRL</div>
     <h1>LSRL Visualizer</h1>
     <div id="status-badge">ready</div>
-    <span class="subtitle">Least Squares Regression ← Gradient Descent</span>
+    <span class="subtitle">Least Squares Regression – Gradient Descent</span>
   </header>
 
   <div id="main">
     <!-- LEFT -->
     <div class="panel" id="data-panel">
-      <div class="panel-title">📊 Data Points</div>
+      <div class="panel-title">Data Points</div>
       <div class="col-headers">
         <span class="col-header">#</span><span class="col-header">x</span><span class="col-header">y</span><span class="col-header"></span>
       </div>
@@ -177,16 +184,17 @@
     <!-- CENTER -->
     <div id="chart-panel">
       <div id="btn-bar">
-        <button class="action-btn" id="btn-plot">▶ Plot</button>
-        <button class="action-btn" id="btn-lsrl" disabled>⊘ Generate LSRL</button>
-        <button class="action-btn" id="btn-squares" disabled>□ Draw Squares</button>
-        <button class="action-btn" id="btn-optimize" disabled>⚡ Optimize</button>
+        <button class="action-btn" id="btn-plot">Plot</button>
+        <button class="action-btn" id="btn-lsrl" disabled>Generate LSRL</button>
+        <button class="action-btn" id="btn-squares" disabled>Draw Squares</button>
+        <button class="action-btn" id="btn-optimize" disabled>Optimize</button>
         <div id="gd-speed-wrap">
+  <button id="theme-toggle" class="action-btn" style="margin-left:auto;">Light/Dark</button>
           <label for="gd-speed-slider">GD Speed</label>
           <input type="range" id="gd-speed-slider" min="1" max="20" value="5" step="1" />
           <span id="gd-speed-val">5×</span>
         </div>
-        <button class="action-btn" id="btn-reset">↺ Reset</button>
+        <button class="action-btn" id="btn-reset">Reset</button>
       </div>
       <svg id="chart-svg"></svg>
       <div id="chart-tooltip"></div>
@@ -194,7 +202,7 @@
 
     <!-- RIGHT -->
     <div class="panel" id="info-panel">
-      <div class="panel-title">📐 Analysis</div>
+      <div class="panel-title">Analysis</div>
       <div class="info-section">
         <div class="info-section-title">Line of Best Fit</div>
         <div id="equation-box" class="equation-box"><div class="placeholder-msg">Generate LSRL first</div></div>
@@ -457,7 +465,8 @@ function renderLine(m, b, animate=true) {
       .attr('x1',xSc(xDom[0])).attr('y1',ySc(y0))
       .attr('x2',xSc(xDom[0])).attr('y2',ySc(y0));
   }
-  const upd = animate ? line.transition().duration(350) : line;
+  // Use a short transition for smooth 60 hz animation
+  const upd = animate ? line.transition().duration(16) : line;
   upd.attr('x1',xSc(xDom[0])).attr('y1',ySc(y0))
      .attr('x2',xSc(xDom[1])).attr('y2',ySc(y1));
 
@@ -504,54 +513,53 @@ function renderSquares(data, m, b) {
   const residuals = computeResiduals(data, m, b);
   const maxArea = d3.max(residuals, d => d.area) || 1;
   const layer = chartG.select('.squares-layer');
-  layer.selectAll('g.sq-group').remove();
+  // Data join for smooth updates
+  const groups = layer.selectAll('g.sq-group').data(residuals, d => d.x + ',' + d.y);
+  const groupsEnter = groups.enter().append('g').attr('class','sq-group');
+  const groupsMerge = groupsEnter.merge(groups);
 
-  residuals.forEach((d, i) => {
+  groupsMerge.each(function(d, i) {
     const px = xSc(d.x), py = ySc(d.y), pyhat = ySc(d.yhat);
     const side = Math.abs(py - pyhat);
-    const top  = Math.min(py, pyhat);
+    const top = Math.min(py, pyhat);
     const color = squareColor(d.area, maxArea);
-
-    const g = layer.append('g').attr('class','sq-group');
-
-    g.append('rect')
-      .attr('class','residual-square')
-      .attr('x', px - side).attr('y', top)
-      .attr('width', side).attr('height', side)
-      .attr('fill', color).attr('fill-opacity', 0.12)
-      .attr('stroke', color).attr('stroke-opacity', 0.85)
-      .attr('stroke-width', 1)
-      .attr('opacity', 0)
-      .on('mouseenter', function(event) {
-        d3.select(this).attr('fill-opacity', 0.28).attr('stroke-width', 2);
-        const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
-        showTooltip(
-          `<span style="color:${color}">Square</span><br>` +
-          `Point: (${d.x}, ${d.y.toFixed(3)})<br>` +
-          `On line (ŷ): ${d.yhat.toFixed(3)}<br>` +
-          `Residual: ${d.res.toFixed(3)}<br>` +
-          `Area: <b>${d.area.toFixed(4)}</b>`,
-          mx, my
-        );
-      })
-      .on('mousemove', function(event) {
-        const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
-        tooltip.style.left=(mx+14)+'px'; tooltip.style.top=(my-10)+'px';
-      })
-      .on('mouseleave', function() {
-        d3.select(this).attr('fill-opacity', 0.12).attr('stroke-width', 1);
-        hideTooltip();
-      })
-      .transition().duration(300).delay(i*30).attr('opacity', 1);
-
+    const g = d3.select(this);
+    let rect = g.select('rect');
+    if (rect.empty()) {
+      rect = g.append('rect').attr('class','residual-square');
+    }
+    rect.attr('x', px - side).attr('y', top)
+        .attr('width', side).attr('height', side)
+        .attr('fill', color).attr('fill-opacity', 0.12)
+        .attr('stroke', color).attr('stroke-opacity', 0.85)
+        .attr('stroke-width', 1)
+        .attr('opacity', 0)
+        .on('mouseenter', function(event) {
+          d3.select(this).attr('fill-opacity', 0.28).attr('stroke-width', 2);
+          const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+          showTooltip(`<span style="color:${color}">Square</span><br>Point: (${d.x}, ${d.y.toFixed(3)})<br>On line (ŷ): ${d.yhat.toFixed(3)}<br>Residual: ${d.res.toFixed(3)}<br>Area: <b>${d.area.toFixed(4)}</b>`, mx, my);
+        })
+        .on('mousemove', function(event) {
+          const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+          tooltip.style.left=(mx+14)+'px'; tooltip.style.top=(my-10)+'px';
+        })
+        .on('mouseleave', function() { d3.select(this).attr('fill-opacity',0.12).attr('stroke-width',1); hideTooltip(); })
+        .transition().duration(16).attr('opacity',1);
+    // Text label
+    let label = g.select('text.residual-label');
     if (side > 18) {
-      g.append('text').attr('class','residual-label')
-        .attr('x', px - side/2).attr('y', top + side/2)
-        .attr('fill','#fff').attr('opacity', 0.7)
-        .text(d.area < 1000 ? d.area.toFixed(2) : d.area.toExponential(2));
+      if (label.empty()) {
+        label = g.append('text').attr('class','residual-label');
+      }
+      label.attr('x', px - side/2).attr('y', top + side/2)
+           .attr('fill','#fff').attr('opacity',0.7)
+           .text(d.area < 1000 ? d.area.toFixed(2) : d.area.toExponential(2));
+    } else {
+      label.remove();
     }
   });
 
+  groups.exit().remove();
   updateSquaresInfo(residuals, maxArea);
 }
 
@@ -628,7 +636,7 @@ function setIteration(idx) {
   const e = state.history[idx];
   state.currentM = e.m; state.currentB = e.b;
   renderLine(e.m, e.b, false);
-  if (state.showSquares) renderSquares(state.data, e.m, e.b);
+  renderSquares(state.data, e.m, e.b);
   updateEquation(e.m, e.b);
   updateSSEDisplay(e.sse, e.iter);
   document.getElementById('timeline-slider').value = idx;
@@ -724,9 +732,11 @@ document.getElementById('btn-optimize').addEventListener('click', () => {
   if (state.optimizing) return;
   state.optimizing = true; updateButtonStates();
   const btn = document.getElementById('btn-optimize');
-  btn.innerHTML = '<span class="spinning">⚡</span> Optimizing…';
+  btn.innerHTML = '<span class="spinning">Optimizing…</span>';
   btn.classList.add('btn-pulse');
   setStatus('optimizing…');
+  // Ensure squares are shown during optimization
+  state.showSquares = true;
   state.history = runGradientDescent(state.data, 400);
   state.currentIter = 0;
   const slider = document.getElementById('timeline-slider');
@@ -735,9 +745,9 @@ document.getElementById('btn-optimize').addEventListener('click', () => {
   let i = 0;
   function animStep() {
     if (i >= state.history.length) {
-      state.optimizing=false; btn.innerHTML='⚡ Re-Optimize'; btn.classList.remove('btn-pulse'); btn.disabled=false;
-      setStatus('optimized ✓');
-      toast(`Converged in ${state.history.length} iterations ✓`,'success');
+      state.optimizing=false; btn.innerHTML='Re-Optimize'; btn.classList.remove('btn-pulse'); btn.disabled=false;
+      setStatus('optimized');
+      toast(`Converged in ${state.history.length} iterations`,'success');
       document.getElementById('timeline-panel').classList.add('visible');
       setIteration(state.history.length-1);
       return;
@@ -793,6 +803,14 @@ function toast(msg, type='') {
 // ── INIT ──────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   initChart(); updateButtonStates();
+  // Theme toggle handler
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+  // Apply saved theme on load
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light') document.body.classList.add('light-mode');
   document.addEventListener('keydown', e => {
     if (document.activeElement.tagName==='INPUT') return;
     if (e.key==='ArrowRight') setIteration(state.currentIter+1);
@@ -811,6 +829,17 @@ window.addEventListener('resize', () => {
     if (state.history.length) renderSSEChart(state.currentIter);
   }
 });
+
+// Add zoom & pan support
+function addZoom() {
+  const zoom = d3.zoom()
+    .scaleExtent([0.5, 20])
+    .on('zoom', (event) => {
+      chartG.attr('transform', event.transform);
+    });
+  d3.select('#chart-svg').call(zoom);
+}
+addZoom();
 </script>
 </body>
 </html>
