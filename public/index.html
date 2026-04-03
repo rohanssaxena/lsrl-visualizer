@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LSRL Visualizer — Least Squares Regression</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-base:#080811; --bg-card:rgba(255,255,255,0.035);
+      --border:rgba(255,255,255,0.07); --border-bright:rgba(255,255,255,0.14);
+      --text-primary:#eeeeff; --text-secondary:#8888aa; --text-muted:#44445a;
+      --cyan:#06d6a0; --orange:#ff7043; --purple:#7c5cfc; --pink:#ff4d88;
+      --blue:#4da6ff; --yellow:#ffd166;
+    }
+    html,body { width:100%; height:100%; background:var(--bg-base); color:var(--text-primary); font-family:'Inter',sans-serif; overflow:hidden; user-select:none; }
+    #app { display:grid; grid-template-rows:52px 1fr auto; height:100vh; }
+
+    /* HEADER */
+    #header { display:flex; align-items:center; gap:14px; padding:0 20px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border); z-index:10; }
+    #header .logo { width:28px; height:28px; background:linear-gradient(135deg,var(--cyan),var(--purple)); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    #header h1 { font-size:15px; font-weight:600; background:linear-gradient(90deg,var(--text-primary),var(--text-secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    #header .subtitle { font-size:11px; color:var(--text-muted); margin-left:auto; font-family:'JetBrains Mono',monospace; }
+    #status-badge { font-size:10px; font-family:'JetBrains Mono',monospace; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:3px 10px; color:var(--text-muted); }
+
+    /* MAIN */
+    #main { display:grid; grid-template-columns:240px 1fr 230px; overflow:hidden; }
+    .panel { background:var(--bg-card); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+    .panel:last-child { border-right:none; border-left:1px solid var(--border); }
+    .panel-title { font-size:10px; font-weight:600; letter-spacing:1.2px; color:var(--text-muted); text-transform:uppercase; padding:14px 16px 10px; border-bottom:1px solid var(--border); flex-shrink:0; }
+
+    /* DATA TABLE */
+    #data-panel { padding-bottom:8px; }
+    #data-table-wrap { overflow-y:auto; flex:1; padding:10px 12px 4px; }
+    #data-table-wrap::-webkit-scrollbar { width:4px; }
+    #data-table-wrap::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
+    .data-row { display:grid; grid-template-columns:22px 1fr 1fr 28px; align-items:center; gap:6px; margin-bottom:6px; }
+    .row-num { font-size:10px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; text-align:center; }
+    .data-input { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; color:var(--text-primary); font-size:12px; font-family:'JetBrains Mono',monospace; padding:6px 8px; width:100%; outline:none; transition:border-color .15s,background .15s; }
+    .data-input:focus { border-color:var(--purple); background:rgba(124,92,252,0.08); }
+    .data-input::placeholder { color:var(--text-muted); }
+    .data-input.filled { border-color:rgba(6,214,160,0.3); }
+    .remove-btn { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:14px; width:22px; height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center; transition:color .15s,background .15s; }
+    .remove-btn:hover { color:var(--pink); background:rgba(255,77,136,0.1); }
+    .col-headers { display:grid; grid-template-columns:22px 1fr 1fr 28px; gap:6px; padding:8px 12px 2px; flex-shrink:0; }
+    .col-header { font-size:10px; color:var(--text-muted); letter-spacing:.8px; text-align:center; }
+    #add-row-btn { margin:6px 12px; background:rgba(255,255,255,0.04); border:1px dashed var(--border-bright); border-radius:6px; color:var(--text-secondary); font-size:11px; cursor:pointer; padding:7px; transition:all .15s; flex-shrink:0; }
+    #add-row-btn:hover { background:rgba(124,92,252,0.1); border-color:var(--purple); color:var(--purple); }
+    #add-row-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+    /* BUTTON BAR */
+    #btn-bar { display:flex; gap:8px; align-items:center; padding:8px 16px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.015); flex-shrink:0; flex-wrap:wrap; }
+    .action-btn { padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid transparent; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; white-space:nowrap; }
+    .action-btn:active { transform:scale(.97); }
+    .action-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+    #btn-plot { background:linear-gradient(135deg,#7c5cfc,#4da6ff); color:#fff; box-shadow:0 4px 16px rgba(124,92,252,0.3); }
+    #btn-lsrl { background:linear-gradient(135deg,var(--cyan),#06b88a); color:#021a12; box-shadow:0 4px 16px rgba(6,214,160,0.2); }
+    #btn-squares { background:linear-gradient(135deg,var(--yellow),#f4a228); color:#1a1000; box-shadow:0 4px 16px rgba(255,209,102,0.2); }
+    #btn-optimize { background:linear-gradient(135deg,var(--orange),var(--pink)); color:#fff; box-shadow:0 4px 16px rgba(255,112,67,0.3); }
+    #btn-reset { background:transparent; border-color:var(--border-bright); color:var(--text-secondary); margin-left:auto; }
+    #btn-reset:hover { border-color:var(--pink); color:var(--pink); }
+    .btn-pulse { animation:btnPulse 1.5s ease-in-out infinite; }
+    @keyframes btnPulse { 0%,100%{box-shadow:0 4px 16px rgba(255,112,67,0.3);}50%{box-shadow:0 4px 30px rgba(255,112,67,0.7);} }
+
+    /* SPEED CONTROL */
+    #gd-speed-wrap { display:flex; align-items:center; gap:6px; margin-left:4px; padding:4px 10px; background:rgba(255,255,255,0.04); border:1px solid var(--border-bright); border-radius:8px; }
+    #gd-speed-wrap label { font-size:10px; color:var(--text-muted); white-space:nowrap; }
+    #gd-speed-slider { width:80px; -webkit-appearance:none; appearance:none; height:3px; border-radius:2px; background:var(--border-bright); outline:none; cursor:pointer; }
+    #gd-speed-slider::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; border-radius:50%; background:var(--purple); box-shadow:0 0 6px rgba(124,92,252,0.5); cursor:pointer; }
+    #gd-speed-val { font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--purple); min-width:32px; }
+
+    /* CHART */
+    #chart-panel { position:relative; flex:1; overflow:hidden; display:flex; flex-direction:column; }
+    #chart-svg { flex:1; display:block; width:100%; }
+    .axis-x path,.axis-y path { stroke:rgba(255,255,255,0.12); }
+    .axis-x text,.axis-y text { fill:#44445a; font-size:10px; font-family:'JetBrains Mono',monospace; }
+    .zero-line { stroke:rgba(255,255,255,0.18); stroke-width:1px; }
+    .regression-line { fill:none; stroke:var(--orange); stroke-width:2.5; stroke-linecap:round; filter:drop-shadow(0 0 6px rgba(255,112,67,0.5)); cursor:crosshair; }
+    .regression-line:hover { stroke-width:4; filter:drop-shadow(0 0 12px rgba(255,112,67,0.8)); }
+    .data-point { fill:var(--cyan); stroke:rgba(6,214,160,0.4); stroke-width:1.5; filter:drop-shadow(0 0 4px rgba(6,214,160,0.4)); cursor:pointer; transition:r .1s; }
+    .residual-square { stroke-width:1px; }
+    .residual-label { font-family:'JetBrains Mono',monospace; font-size:9px; dominant-baseline:middle; text-anchor:middle; pointer-events:none; }
+    .sq-connector { stroke:rgba(255,255,255,0.3); stroke-width:1px; stroke-dasharray:3,3; pointer-events:none; }
+    .axis-label { fill:var(--text-secondary); font-size:11px; font-family:'Inter',sans-serif; }
+
+    /* TOOLTIP */
+    #chart-tooltip {
+      position:absolute; pointer-events:none; z-index:100;
+      background:rgba(12,12,28,0.92); border:1px solid var(--border-bright);
+      border-radius:8px; padding:8px 12px;
+      font-size:11px; font-family:'JetBrains Mono',monospace;
+      color:var(--text-primary); line-height:1.7;
+      backdrop-filter:blur(16px);
+      transition:opacity .12s;
+      max-width:200px;
+      display:none;
+    }
+    #chart-tooltip.visible { display:block; }
+
+    /* INFO PANEL */
+    #info-panel { padding:0; overflow-y:auto; }
+    #info-panel::-webkit-scrollbar { width:4px; }
+    #info-panel::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
+    .info-section { padding:14px 16px; border-bottom:1px solid var(--border); }
+    .info-section-title { font-size:9px; font-weight:600; letter-spacing:1.4px; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; }
+    .equation-box { background:rgba(255,112,67,0.07); border:1px solid rgba(255,112,67,0.2); border-radius:8px; padding:12px 14px; font-family:'JetBrains Mono',monospace; }
+    .eq-main { font-size:14px; font-weight:600; color:var(--orange); margin-bottom:6px; }
+    .eq-sub { font-size:10px; color:var(--text-secondary); line-height:1.6; }
+    .eq-val { color:var(--text-primary); }
+    .placeholder-msg { font-size:11px; color:var(--text-muted); font-style:italic; text-align:center; padding:8px 0; }
+    #squares-table { width:100%; border-collapse:collapse; }
+    #squares-table th { font-size:9px; letter-spacing:.8px; text-transform:uppercase; color:var(--text-muted); font-weight:500; padding:4px 6px; text-align:right; }
+    #squares-table th:first-child { text-align:left; }
+    #squares-table td { font-size:11px; font-family:'JetBrains Mono',monospace; padding:5px 6px; text-align:right; border-top:1px solid var(--border); }
+    #squares-table td:first-child { text-align:left; color:var(--text-secondary); }
+    .sq-color-dot { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+    .sse-display { background:rgba(124,92,252,0.08); border:1px solid rgba(124,92,252,0.2); border-radius:8px; padding:12px 14px; }
+    .sse-label { font-size:9px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+    .sse-value { font-size:22px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--purple); }
+    .sse-value.animating { color:var(--orange); }
+    .iter-display { font-size:10px; color:var(--text-secondary); margin-top:6px; font-family:'JetBrains Mono',monospace; }
+
+    /* TIMELINE */
+    #timeline-panel { border-top:1px solid var(--border); background:rgba(255,255,255,0.015); display:none; flex-direction:column; height:190px; flex-shrink:0; }
+    #timeline-panel.visible { display:flex; }
+    #timeline-inner { display:grid; grid-template-columns:1fr 260px; flex:1; overflow:hidden; }
+    #sse-chart-wrap { padding:10px 16px; display:flex; flex-direction:column; }
+    #sse-chart-title { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; }
+    #sse-svg { flex:1; width:100%; }
+    #scrubber-wrap { border-left:1px solid var(--border); padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+    #scrubber-title { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-muted); }
+    #iter-info { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); }
+    #iter-info span { color:var(--text-primary); font-weight:600; }
+    #scrubber-controls { display:flex; align-items:center; gap:8px; }
+    #play-pause-btn { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--blue)); border:none; cursor:pointer; color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; box-shadow:0 2px 12px rgba(124,92,252,0.35); }
+    #play-pause-btn:hover { transform:scale(1.1); }
+    #timeline-slider { flex:1; -webkit-appearance:none; appearance:none; height:4px; border-radius:2px; background:var(--border-bright); outline:none; cursor:pointer; }
+    #timeline-slider::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--blue)); box-shadow:0 0 8px rgba(124,92,252,0.5); cursor:pointer; }
+    #iter-counter { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); white-space:nowrap; }
+    #speed-btn { background:rgba(255,255,255,0.05); border:1px solid var(--border-bright); border-radius:5px; color:var(--text-secondary); font-size:10px; padding:4px 8px; cursor:pointer; font-family:'JetBrains Mono',monospace; transition:all .15s; }
+    #speed-btn:hover { border-color:var(--purple); color:var(--purple); }
+    .sse-line { fill:none; stroke:url(#sseGrad); stroke-width:2; }
+    .sse-area { opacity:.12; }
+    .iter-cursor { stroke:var(--purple); stroke-width:1.5; stroke-dasharray:4,3; }
+
+    /* TOAST */
+    #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:rgba(30,30,50,0.95); border:1px solid var(--border-bright); border-radius:10px; padding:10px 18px; font-size:12px; color:var(--text-primary); backdrop-filter:blur(20px); transition:transform .3s cubic-bezier(.34,1.56,.64,1); z-index:9999; pointer-events:none; }
+    #toast.show { transform:translateX(-50%) translateY(0); }
+    #toast.error { border-color:rgba(255,77,136,0.5); color:var(--pink); }
+    #toast.success { border-color:rgba(6,214,160,0.4); color:var(--cyan); }
+    .spinning { animation:spin .7s linear infinite; display:inline-block; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header id="header">
+    <div class="logo">∑</div>
+    <h1>LSRL Visualizer</h1>
+    <div id="status-badge">ready</div>
+    <span class="subtitle">Least Squares Regression ← Gradient Descent</span>
+  </header>
+
+  <div id="main">
+    <!-- LEFT -->
+    <div class="panel" id="data-panel">
+      <div class="panel-title">📊 Data Points</div>
+      <div class="col-headers">
+        <span class="col-header">#</span><span class="col-header">x</span><span class="col-header">y</span><span class="col-header"></span>
+      </div>
+      <div id="data-table-wrap"></div>
+      <button id="add-row-btn">+ Add point</button>
+    </div>
+
+    <!-- CENTER -->
+    <div id="chart-panel">
+      <div id="btn-bar">
+        <button class="action-btn" id="btn-plot">▶ Plot</button>
+        <button class="action-btn" id="btn-lsrl" disabled>⊘ Generate LSRL</button>
+        <button class="action-btn" id="btn-squares" disabled>□ Draw Squares</button>
+        <button class="action-btn" id="btn-optimize" disabled>⚡ Optimize</button>
+        <div id="gd-speed-wrap">
+          <label for="gd-speed-slider">GD Speed</label>
+          <input type="range" id="gd-speed-slider" min="1" max="20" value="5" step="1" />
+          <span id="gd-speed-val">5×</span>
+        </div>
+        <button class="action-btn" id="btn-reset">↺ Reset</button>
+      </div>
+      <svg id="chart-svg"></svg>
+      <div id="chart-tooltip"></div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel" id="info-panel">
+      <div class="panel-title">📐 Analysis</div>
+      <div class="info-section">
+        <div class="info-section-title">Line of Best Fit</div>
+        <div id="equation-box" class="equation-box"><div class="placeholder-msg">Generate LSRL first</div></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title">Residual Squares</div>
+        <div id="squares-info"><div class="placeholder-msg">Draw squares to see areas</div></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title">Sum of Squares (SSE)</div>
+        <div class="sse-display">
+          <div class="sse-label">SSE</div>
+          <div class="sse-value" id="sse-value">—</div>
+          <div class="iter-display" id="iter-display"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div id="timeline-panel">
+    <div id="timeline-inner">
+      <div id="sse-chart-wrap">
+        <div id="sse-chart-title">SSE vs. Iteration</div>
+        <svg id="sse-svg"></svg>
+      </div>
+      <div id="scrubber-wrap">
+        <div id="scrubber-title">Iteration Timeline</div>
+        <div id="iter-info">Iteration <span id="iter-num">0</span> / <span id="iter-total">0</span></div>
+        <div id="scrubber-controls">
+          <button id="play-pause-btn">▶</button>
+          <input type="range" id="timeline-slider" min="0" value="0" />
+          <span id="iter-counter">0 / 0</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="speed-btn">1×</button>
+          <span style="font-size:10px;color:var(--text-muted);">playback speed</span>
+        </div>
+        <div id="sse-at-iter" style="font-size:10px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────
+const state = {
+  data:[], plotted:false, lsrlComputed:false,
+  lsrlM:0, lsrlB:0, currentM:0, currentB:0,
+  showSquares:false, optimizing:false,
+  history:[], currentIter:0, playing:false,
+  playTimer:null,
+};
+
+// ── DATA TABLE ────────────────────────────────
+const tableWrap = document.getElementById('data-table-wrap');
+let rowCount = 0;
+
+function addRow(xVal='', yVal='') {
+  if (rowCount >= 10) return;
+  rowCount++;
+  const id = rowCount;
+  const div = document.createElement('div');
+  div.className = 'data-row'; div.id = `row-${id}`;
+  div.innerHTML = `
+    <span class="row-num">${id}</span>
+    <input class="data-input" id="x-${id}" type="number" placeholder="x" step="any" value="${xVal}" />
+    <input class="data-input" id="y-${id}" type="number" placeholder="y" step="any" value="${yVal}" />
+    <button class="remove-btn" onclick="removeRow(${id})">×</button>`;
+  tableWrap.appendChild(div);
+  ['x','y'].forEach(ax => {
+    const inp = document.getElementById(`${ax}-${id}`);
+    inp.addEventListener('input', () => inp.classList.toggle('filled', inp.value !== ''));
+    if (inp.value !== '') inp.classList.add('filled');
+  });
+  document.getElementById('add-row-btn').disabled = rowCount >= 10;
+}
+
+function removeRow(id) {
+  const el = document.getElementById(`row-${id}`);
+  if (el) { el.remove(); rowCount--; }
+  document.getElementById('add-row-btn').disabled = rowCount >= 10;
+}
+
+function getTableData() {
+  const data = [];
+  tableWrap.querySelectorAll('.data-row').forEach(row => {
+    const id = row.id.split('-')[1];
+    const x = parseFloat(document.getElementById(`x-${id}`)?.value);
+    const y = parseFloat(document.getElementById(`y-${id}`)?.value);
+    if (!isNaN(x) && !isNaN(y)) data.push({x, y});
+  });
+  return data;
+}
+
+[1,2,3,4,5].forEach(() => addRow());
+document.getElementById('add-row-btn').addEventListener('click', () => addRow());
+
+// ── CHART SETUP ───────────────────────────────
+const CM = {top:36, right:28, bottom:48, left:54};
+let CW, CH, xSc, ySc, svgEl, chartG, sseSvgEl, sseG;
+
+function initChart() {
+  const panel = document.getElementById('chart-panel');
+  const svgNode = document.getElementById('chart-svg');
+  const btnBar  = document.getElementById('btn-bar');
+  const svgW = panel.clientWidth;
+  const svgH = panel.clientHeight - btnBar.clientHeight;
+  CW = svgW - CM.left - CM.right;
+  CH = svgH - CM.top  - CM.bottom;
+
+  const svg = d3.select('#chart-svg').attr('width', svgW).attr('height', svgH);
+  const defs = svg.append('defs');
+  const bg = defs.append('radialGradient').attr('id','chartBg').attr('cx','50%').attr('cy','50%').attr('r','70%');
+  bg.append('stop').attr('offset','0%').attr('stop-color','#0f0f28');
+  bg.append('stop').attr('offset','100%').attr('stop-color','#080811');
+  svg.append('rect').attr('width',svgW).attr('height',svgH).attr('fill','url(#chartBg)');
+
+  chartG = svg.append('g').attr('transform',`translate(${CM.left},${CM.top})`);
+  chartG.append('g').attr('class','squares-layer');
+  chartG.append('g').attr('class','connectors-layer');
+  chartG.append('g').attr('class','line-layer');
+  chartG.append('g').attr('class','points-layer');
+  chartG.append('g').attr('class','axis-x');
+  chartG.append('g').attr('class','axis-y');
+  // axis labels
+  chartG.append('text').attr('class','axis-label').attr('x',CW/2).attr('y',CH+40).attr('text-anchor','middle').text('x');
+  chartG.append('text').attr('class','axis-label').attr('transform','rotate(-90)').attr('x',-CH/2).attr('y',-42).attr('text-anchor','middle').text('y');
+
+  svgEl = svg;
+  initSSEChart();
+}
+
+// ── SSE MINI CHART ────────────────────────────
+function initSSEChart() {
+  const defs2 = d3.select('#sse-svg').append('defs');
+  const sg = defs2.append('linearGradient').attr('id','sseGrad').attr('x1','0%').attr('y1','0%').attr('x2','100%').attr('y2','0%');
+  sg.append('stop').attr('offset','0%').attr('stop-color','#7c5cfc');
+  sg.append('stop').attr('offset','100%').attr('stop-color','#ff7043');
+  sseSvgEl = d3.select('#sse-svg');
+  const sm = {top:10, right:16, bottom:28, left:46};
+  sseG = sseSvgEl.append('g').attr('class','sse-main').attr('transform',`translate(${sm.left},${sm.top})`);
+  sseG.append('g').attr('class','sse-x-axis');
+  sseG.append('g').attr('class','sse-y-axis');
+  sseG.append('path').attr('class','sse-area');
+  sseG.append('path').attr('class','sse-line');
+  sseG.append('line').attr('class','iter-cursor');
+}
+
+function renderSSEChart(idx) {
+  const wrap = document.getElementById('sse-svg');
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  const sm = {top:10, right:16, bottom:28, left:46};
+  const sw = W - sm.left - sm.right, sh = H - sm.top - sm.bottom;
+  const hist = state.history.slice(0, idx + 1);
+  if (hist.length < 2) return;
+  const xS = d3.scaleLinear().domain([0, state.history.length-1]).range([0, sw]);
+  const maxSSE = d3.max(state.history, d => d.sse);
+  const yS = d3.scaleLinear().domain([0, maxSSE * 1.05]).range([sh, 0]);
+  const lineFn = d3.line().x((_,i) => xS(i)).y(d => yS(d.sse)).curve(d3.curveMonotoneX);
+  const areaFn = d3.area().x((_,i) => xS(i)).y0(sh).y1(d => yS(d.sse)).curve(d3.curveMonotoneX);
+  sseG.select('.sse-x-axis').attr('transform',`translate(0,${sh})`).call(d3.axisBottom(xS).ticks(5).tickSize(0)).select('.domain').attr('stroke','rgba(255,255,255,0.1)');
+  sseG.select('.sse-x-axis').selectAll('text').attr('fill','#44445a').attr('font-size','9px').attr('font-family','JetBrains Mono');
+  sseG.select('.sse-y-axis').call(d3.axisLeft(yS).ticks(4).tickSize(0).tickFormat(d3.format('.2s'))).select('.domain').attr('stroke','rgba(255,255,255,0.1)');
+  sseG.select('.sse-y-axis').selectAll('text').attr('fill','#44445a').attr('font-size','9px').attr('font-family','JetBrains Mono');
+  sseG.select('.sse-area').datum(hist).attr('d', areaFn).attr('fill','url(#sseGrad)');
+  sseG.select('.sse-line').datum(hist).attr('d', lineFn);
+  const cx = xS(idx);
+  sseG.select('.iter-cursor').attr('x1',cx).attr('x2',cx).attr('y1',0).attr('y2',sh);
+}
+
+// ── SCALES & AXES ─────────────────────────────
+function computeScales(data) {
+  // Always include 0 to make 4-quadrant feel natural
+  const xs = data.map(d => d.x).concat([0]);
+  const ys = data.map(d => d.y).concat([0]);
+  const xEx = d3.extent(xs);
+  const yEx = d3.extent(ys);
+  const xPad = Math.max((xEx[1]-xEx[0])*0.15, 1);
+  const yPad = Math.max((yEx[1]-yEx[0])*0.15, 1);
+  xSc = d3.scaleLinear().domain([xEx[0]-xPad, xEx[1]+xPad]).range([0, CW]);
+  ySc = d3.scaleLinear().domain([yEx[0]-yPad, yEx[1]+yPad]).range([CH, 0]);
+}
+
+function renderAxes() {
+  const xAx = d3.axisBottom(xSc).ticks(8).tickSize(-CH).tickFormat(d3.format('.4~g'));
+  const yAx = d3.axisLeft(ySc).ticks(8).tickSize(-CW).tickFormat(d3.format('.4~g'));
+
+  chartG.select('.axis-x').attr('transform',`translate(0,${ySc(0)})`).transition().duration(400).call(xAx);
+  chartG.select('.axis-y').attr('transform',`translate(${xSc(0)},0)`).transition().duration(400).call(yAx);
+
+  // Style tick grid lines
+  chartG.selectAll('.axis-x .tick line, .axis-y .tick line')
+    .attr('stroke','rgba(255,255,255,0.05)').attr('stroke-dasharray','3,3');
+  chartG.selectAll('.axis-x .domain, .axis-y .domain')
+    .attr('stroke','rgba(255,255,255,0.2)').attr('stroke-width','1.5');
+  chartG.selectAll('.axis-x text, .axis-y text')
+    .attr('fill','#44445a').attr('font-size','10px').attr('font-family','JetBrains Mono,monospace');
+}
+
+// ── TOOLTIP ───────────────────────────────────
+const tooltip = document.getElementById('chart-tooltip');
+function showTooltip(html, x, y) {
+  tooltip.innerHTML = html;
+  tooltip.classList.add('visible');
+  // position near cursor but keep in bounds
+  const panel = document.getElementById('chart-panel');
+  const pr = panel.getBoundingClientRect();
+  let tx = x + 14, ty = y - 10;
+  if (tx + 200 > pr.width) tx = x - 210;
+  if (ty < 0) ty = 0;
+  tooltip.style.left = tx + 'px';
+  tooltip.style.top  = ty + 'px';
+}
+function hideTooltip() { tooltip.classList.remove('visible'); }
+
+// ── PLOT POINTS ───────────────────────────────
+function renderPoints(data) {
+  // Clear and re-draw cleanly (avoids the enter/append chaining bug)
+  const layer = chartG.select('.points-layer');
+  layer.selectAll('circle').remove();
+
+  data.forEach(d => {
+    layer.append('circle')
+      .datum(d)
+      .attr('class','data-point')
+      .attr('cx', xSc(d.x))
+      .attr('cy', ySc(d.y))
+      .attr('r', 0)
+      .on('mouseenter', function(event, datum) {
+        d3.select(this).attr('r', 9).attr('stroke-width', 3);
+        const [mx, my] = d3.pointer(event, document.getElementById('chart-panel'));
+        showTooltip(
+          `<span style="color:var(--cyan)">Point</span><br>x = <b>${datum.x}</b><br>y = <b>${datum.y}</b>`,
+          mx, my
+        );
+      })
+      .on('mousemove', function(event) {
+        const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+        tooltip.style.left = (mx+14)+'px'; tooltip.style.top = (my-10)+'px';
+      })
+      .on('mouseleave', function() {
+        d3.select(this).attr('r', 6.5).attr('stroke-width', 1.5);
+        hideTooltip();
+      })
+      .transition().duration(400).delay((_, i) => i * 40)
+      .attr('r', 6.5);
+  });
+}
+
+// ── REGRESSION LINE ───────────────────────────
+function renderLine(m, b, animate=true) {
+  const xDom = xSc.domain();
+  const y0 = m*xDom[0]+b, y1 = m*xDom[1]+b;
+  let line = chartG.select('.line-layer').select('.regression-line');
+  if (line.empty()) {
+    line = chartG.select('.line-layer').append('line')
+      .attr('class','regression-line')
+      .attr('x1',xSc(xDom[0])).attr('y1',ySc(y0))
+      .attr('x2',xSc(xDom[0])).attr('y2',ySc(y0));
+  }
+  const upd = animate ? line.transition().duration(350) : line;
+  upd.attr('x1',xSc(xDom[0])).attr('y1',ySc(y0))
+     .attr('x2',xSc(xDom[1])).attr('y2',ySc(y1));
+
+  // Line hover — show connectors to all points
+  chartG.select('.line-layer').select('.regression-line')
+    .on('mouseenter', function(event) {
+      if (!state.lsrlComputed) return;
+      const res = computeResiduals(state.data, state.currentM, state.currentB);
+      const cl = chartG.select('.connectors-layer');
+      cl.selectAll('*').remove();
+      res.forEach(d => {
+        cl.append('line').attr('class','sq-connector')
+          .attr('x1',xSc(d.x)).attr('y1',ySc(d.y))
+          .attr('x2',xSc(d.x)).attr('y2',ySc(d.yhat));
+        cl.append('circle').attr('r',4).attr('fill','var(--orange)').attr('opacity',0.7)
+          .attr('cx',xSc(d.x)).attr('cy',ySc(d.yhat));
+      });
+      const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+      showTooltip(`<span style="color:var(--orange)">Regression Line</span><br>ŷ = ${state.currentM.toFixed(3)}x + ${state.currentB.toFixed(3)}`, mx, my);
+    })
+    .on('mousemove', function(event) {
+      const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+      tooltip.style.left=(mx+14)+'px'; tooltip.style.top=(my-10)+'px';
+    })
+    .on('mouseleave', function() {
+      chartG.select('.connectors-layer').selectAll('*').remove();
+      hideTooltip();
+    });
+}
+
+// ── RESIDUAL SQUARES ──────────────────────────
+function squareColor(area, maxArea) {
+  const t = maxArea > 0 ? area/maxArea : 0;
+  return d3.interpolateRgb('#06d6a0','#ff4d88')(t);
+}
+function computeResiduals(data, m, b) {
+  return data.map(d => {
+    const yhat = m*d.x+b, res = d.y-yhat;
+    return {...d, yhat, res, area:res*res};
+  });
+}
+
+function renderSquares(data, m, b) {
+  const residuals = computeResiduals(data, m, b);
+  const maxArea = d3.max(residuals, d => d.area) || 1;
+  const layer = chartG.select('.squares-layer');
+  layer.selectAll('g.sq-group').remove();
+
+  residuals.forEach((d, i) => {
+    const px = xSc(d.x), py = ySc(d.y), pyhat = ySc(d.yhat);
+    const side = Math.abs(py - pyhat);
+    const top  = Math.min(py, pyhat);
+    const color = squareColor(d.area, maxArea);
+
+    const g = layer.append('g').attr('class','sq-group');
+
+    g.append('rect')
+      .attr('class','residual-square')
+      .attr('x', px - side).attr('y', top)
+      .attr('width', side).attr('height', side)
+      .attr('fill', color).attr('fill-opacity', 0.12)
+      .attr('stroke', color).attr('stroke-opacity', 0.85)
+      .attr('stroke-width', 1)
+      .attr('opacity', 0)
+      .on('mouseenter', function(event) {
+        d3.select(this).attr('fill-opacity', 0.28).attr('stroke-width', 2);
+        const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+        showTooltip(
+          `<span style="color:${color}">Square</span><br>` +
+          `Point: (${d.x}, ${d.y.toFixed(3)})<br>` +
+          `On line (ŷ): ${d.yhat.toFixed(3)}<br>` +
+          `Residual: ${d.res.toFixed(3)}<br>` +
+          `Area: <b>${d.area.toFixed(4)}</b>`,
+          mx, my
+        );
+      })
+      .on('mousemove', function(event) {
+        const [mx,my] = d3.pointer(event, document.getElementById('chart-panel'));
+        tooltip.style.left=(mx+14)+'px'; tooltip.style.top=(my-10)+'px';
+      })
+      .on('mouseleave', function() {
+        d3.select(this).attr('fill-opacity', 0.12).attr('stroke-width', 1);
+        hideTooltip();
+      })
+      .transition().duration(300).delay(i*30).attr('opacity', 1);
+
+    if (side > 18) {
+      g.append('text').attr('class','residual-label')
+        .attr('x', px - side/2).attr('y', top + side/2)
+        .attr('fill','#fff').attr('opacity', 0.7)
+        .text(d.area < 1000 ? d.area.toFixed(2) : d.area.toExponential(2));
+    }
+  });
+
+  updateSquaresInfo(residuals, maxArea);
+}
+
+function clearSquares() { chartG.select('.squares-layer').selectAll('g.sq-group').remove(); }
+
+// ── INFO PANEL ────────────────────────────────
+function updateEquation(m, b) {
+  const mStr = m.toFixed(4), bStr = Math.abs(b).toFixed(4), sign = b>=0?'+':'−';
+  document.getElementById('equation-box').innerHTML = `
+    <div class="eq-main">ŷ = <span style="color:#4da6ff">${mStr}</span>x ${sign} <span style="color:#ffd166">${bStr}</span></div>
+    <div class="eq-sub">slope: <span class="eq-val">${mStr}</span><br>intercept: <span class="eq-val">${sign==='+'?'':'-'}${bStr}</span></div>`;
+}
+function updateSquaresInfo(residuals, maxArea) {
+  const sse = residuals.reduce((s,d) => s+d.area, 0);
+  const rows = residuals.map((d,i) => {
+    const color = squareColor(d.area, maxArea);
+    return `<tr><td><span class="sq-color-dot" style="background:${color}"></span>pt ${i+1} (${d.x}, ${typeof d.y==='number'?d.y.toFixed(2):d.y})</td><td>${d.res.toFixed(3)}</td><td>${d.area.toFixed(3)}</td></tr>`;
+  });
+  document.getElementById('squares-info').innerHTML = `
+    <table id="squares-table"><thead><tr><th>Point</th><th>Residual</th><th>Area</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+  updateSSEDisplay(sse, null);
+}
+function updateSSEDisplay(sse, iter) {
+  const el = document.getElementById('sse-value');
+  el.textContent = sse < 10000 ? sse.toFixed(4) : sse.toExponential(3);
+  document.getElementById('iter-display').textContent = iter !== null ? `Iteration: ${iter}` : '';
+  el.classList.toggle('animating', iter !== null);
+}
+
+// ── LSRL ─────────────────────────────────────
+function computeLSRL(data) {
+  const xMean = d3.mean(data, d=>d.x), yMean = d3.mean(data, d=>d.y);
+  const num = data.reduce((s,d) => s+(d.x-xMean)*(d.y-yMean), 0);
+  const den = data.reduce((s,d) => s+(d.x-xMean)**2, 0);
+  const m = den===0?0:num/den;
+  return {m, b: yMean - m*xMean};
+}
+
+// ── GRADIENT DESCENT ──────────────────────────
+function runGradientDescent(data, maxIter=400) {
+  const n = data.length;
+  const xMean = d3.mean(data,d=>d.x), yMean = d3.mean(data,d=>d.y);
+  const xStd  = d3.deviation(data,d=>d.x)||1, yStd = d3.deviation(data,d=>d.y)||1;
+  const norm  = data.map(d => ({x:(d.x-xMean)/xStd, y:(d.y-yMean)/yStd}));
+  let m = (Math.random()-.5)*6, b = (Math.random()-.5)*6;
+  const lr = 0.08;
+  const toOrig = (mn,bn) => {
+    const mO = mn*(yStd/xStd);
+    return {m:mO, b:yMean+bn*yStd-mO*xMean};
+  };
+  const sse = (mn,bn) => data.reduce((s,d,i) => { const e=norm[i].y-(mn*norm[i].x+bn); return s+(e*yStd)**2; }, 0);
+  const history = [];
+  let prevSSE = Infinity;
+  for (let iter=0; iter<maxIter; iter++) {
+    const orig = toOrig(m,b), curSSE = sse(m,b);
+    history.push({m:orig.m, b:orig.b, sse:curSSE, iter});
+    if (Math.abs(prevSSE-curSSE) < 1e-9 && iter>10) break;
+    prevSSE = curSSE;
+    const dm = -2/n * norm.reduce((s,d,i)=>s+d.x*(d.y-(m*d.x+b)),0);
+    const db = -2/n * norm.reduce((s,d,i)=>s+(d.y-(m*d.x+b)),0);
+    m -= lr*dm; b -= lr*db;
+  }
+  return history;
+}
+
+// ── ANIMATION & SCRUBBER ──────────────────────
+const playbackSpeeds = [0.5,1,2,4];
+let speedIdx = 1;
+
+function setIteration(idx) {
+  if (!state.history.length) return;
+  idx = Math.max(0, Math.min(state.history.length-1, idx));
+  state.currentIter = idx;
+  const e = state.history[idx];
+  state.currentM = e.m; state.currentB = e.b;
+  renderLine(e.m, e.b, false);
+  if (state.showSquares) renderSquares(state.data, e.m, e.b);
+  updateEquation(e.m, e.b);
+  updateSSEDisplay(e.sse, e.iter);
+  document.getElementById('timeline-slider').value = idx;
+  document.getElementById('iter-num').textContent = e.iter;
+  document.getElementById('iter-counter').textContent = `${e.iter} / ${state.history[state.history.length-1].iter}`;
+  document.getElementById('sse-at-iter').textContent = `SSE: ${e.sse.toFixed(4)}`;
+  renderSSEChart(idx);
+}
+function startPlay() {
+  if (state.playing) return;
+  state.playing = true;
+  document.getElementById('play-pause-btn').textContent = '⏸';
+  tickPlay();
+}
+function pausePlay() {
+  state.playing = false;
+  if (state.playTimer) { clearTimeout(state.playTimer); state.playTimer=null; }
+  document.getElementById('play-pause-btn').textContent = '▶';
+}
+function tickPlay() {
+  if (!state.playing) return;
+  if (state.currentIter >= state.history.length-1) { pausePlay(); return; }
+  setIteration(state.currentIter+1);
+  state.playTimer = setTimeout(tickPlay, 100/playbackSpeeds[speedIdx]);
+}
+
+// ── GD SPEED SLIDER ───────────────────────────
+let gdStepMs = 100; // ms per iteration during animate
+const gdSlider = document.getElementById('gd-speed-slider');
+const gdVal    = document.getElementById('gd-speed-val');
+gdSlider.addEventListener('input', function() {
+  const v = parseInt(this.value);
+  gdVal.textContent = v + '×';
+  gdStepMs = Math.round(1000 / v); // speed 1 = 1000ms, speed 20 = 50ms
+});
+// init
+gdVal.textContent = gdSlider.value + '×';
+gdStepMs = Math.round(1000 / parseInt(gdSlider.value));
+
+// ── BUTTONS ───────────────────────────────────
+function updateButtonStates() {
+  document.getElementById('btn-lsrl').disabled    = !state.plotted;
+  document.getElementById('btn-squares').disabled = !state.lsrlComputed;
+  document.getElementById('btn-optimize').disabled = !state.lsrlComputed || state.optimizing;
+}
+
+document.getElementById('btn-plot').addEventListener('click', () => {
+  const data = getTableData();
+  if (data.length < 2) { toast('Enter at least 2 data points','error'); return; }
+  state.data=data; state.plotted=true; state.lsrlComputed=false; state.showSquares=false; state.history=[];
+  state.currentM=0; state.currentB=0;
+  chartG.select('.line-layer').selectAll('*').remove();
+  chartG.select('.connectors-layer').selectAll('*').remove();
+  clearSquares();
+  document.getElementById('timeline-panel').classList.remove('visible');
+  document.getElementById('equation-box').innerHTML='<div class="placeholder-msg">Generate LSRL first</div>';
+  document.getElementById('squares-info').innerHTML='<div class="placeholder-msg">Draw squares to see areas</div>';
+  document.getElementById('sse-value').textContent='—';
+  document.getElementById('iter-display').textContent='';
+  computeScales(data);
+  renderAxes();
+  renderPoints(data);
+  setStatus('plotted'); updateButtonStates();
+  toast('Points plotted ✓','success');
+});
+
+document.getElementById('btn-lsrl').addEventListener('click', () => {
+  const {m,b} = computeLSRL(state.data);
+  state.lsrlM=m; state.lsrlB=b; state.currentM=m; state.currentB=b; state.lsrlComputed=true;
+  renderLine(m, b, true);
+  updateEquation(m, b);
+  if (state.showSquares) renderSquares(state.data, m, b);
+  setStatus('lsrl computed'); updateButtonStates();
+  toast('LSRL generated ✓','success');
+});
+
+document.getElementById('btn-squares').addEventListener('click', () => {
+  state.showSquares = !state.showSquares;
+  const btn = document.getElementById('btn-squares');
+  if (state.showSquares) {
+    renderSquares(state.data, state.currentM, state.currentB);
+    btn.textContent = '□ Hide Squares';
+    toast('Residual squares drawn ✓','success');
+  } else {
+    clearSquares();
+    btn.textContent = '□ Draw Squares';
+    document.getElementById('squares-info').innerHTML='<div class="placeholder-msg">Draw squares to see areas</div>';
+    document.getElementById('sse-value').textContent='—';
+  }
+});
+
+document.getElementById('btn-optimize').addEventListener('click', () => {
+  if (state.optimizing) return;
+  state.optimizing = true; updateButtonStates();
+  const btn = document.getElementById('btn-optimize');
+  btn.innerHTML = '<span class="spinning">⚡</span> Optimizing…';
+  btn.classList.add('btn-pulse');
+  setStatus('optimizing…');
+  state.history = runGradientDescent(state.data, 400);
+  state.currentIter = 0;
+  const slider = document.getElementById('timeline-slider');
+  slider.max = state.history.length-1; slider.value = 0;
+  document.getElementById('iter-total').textContent = state.history[state.history.length-1].iter;
+  let i = 0;
+  function animStep() {
+    if (i >= state.history.length) {
+      state.optimizing=false; btn.innerHTML='⚡ Re-Optimize'; btn.classList.remove('btn-pulse'); btn.disabled=false;
+      setStatus('optimized ✓');
+      toast(`Converged in ${state.history.length} iterations ✓`,'success');
+      document.getElementById('timeline-panel').classList.add('visible');
+      setIteration(state.history.length-1);
+      return;
+    }
+    setIteration(i++);
+    setTimeout(animStep, gdStepMs);
+  }
+  animStep();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  state.data=[]; state.plotted=false; state.lsrlComputed=false; state.showSquares=false;
+  state.history=[]; state.optimizing=false; state.currentM=0; state.currentB=0;
+  chartG.select('.points-layer').selectAll('*').remove();
+  chartG.select('.line-layer').selectAll('*').remove();
+  chartG.select('.connectors-layer').selectAll('*').remove();
+  clearSquares();
+  chartG.select('.axis-x').selectAll('*').remove();
+  chartG.select('.axis-y').selectAll('*').remove();
+  document.getElementById('btn-squares').textContent='□ Draw Squares';
+  document.getElementById('btn-optimize').innerHTML='⚡ Optimize';
+  document.getElementById('btn-optimize').classList.remove('btn-pulse');
+  document.getElementById('timeline-panel').classList.remove('visible');
+  document.getElementById('equation-box').innerHTML='<div class="placeholder-msg">Generate LSRL first</div>';
+  document.getElementById('squares-info').innerHTML='<div class="placeholder-msg">Draw squares to see areas</div>';
+  document.getElementById('sse-value').textContent='—'; document.getElementById('iter-display').textContent='';
+  document.getElementById('sse-value').classList.remove('animating');
+  pausePlay(); setStatus('reset'); updateButtonStates(); hideTooltip();
+});
+
+document.getElementById('timeline-slider').addEventListener('input', function() {
+  pausePlay(); setIteration(parseInt(this.value));
+});
+document.getElementById('play-pause-btn').addEventListener('click', () => {
+  if (state.playing) pausePlay();
+  else { if (state.currentIter >= state.history.length-1) setIteration(0); startPlay(); }
+});
+document.getElementById('speed-btn').addEventListener('click', () => {
+  speedIdx = (speedIdx+1) % playbackSpeeds.length;
+  document.getElementById('speed-btn').textContent = playbackSpeeds[speedIdx]+'×';
+});
+
+// ── STATUS / TOAST ────────────────────────────
+function setStatus(msg) { document.getElementById('status-badge').textContent = msg; }
+let toastTimer;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent=msg; el.className = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className=type; }, 2800);
+}
+
+// ── INIT ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  initChart(); updateButtonStates();
+  document.addEventListener('keydown', e => {
+    if (document.activeElement.tagName==='INPUT') return;
+    if (e.key==='ArrowRight') setIteration(state.currentIter+1);
+    if (e.key==='ArrowLeft')  setIteration(state.currentIter-1);
+    if (e.key===' ') { e.preventDefault(); state.playing ? pausePlay() : startPlay(); }
+  });
+});
+window.addEventListener('resize', () => {
+  d3.select('#chart-svg').selectAll('*').remove();
+  d3.select('#sse-svg').selectAll('*').remove();
+  initChart();
+  if (state.plotted) {
+    computeScales(state.data); renderAxes(); renderPoints(state.data);
+    if (state.lsrlComputed) renderLine(state.currentM, state.currentB, false);
+    if (state.showSquares) renderSquares(state.data, state.currentM, state.currentB);
+    if (state.history.length) renderSSEChart(state.currentIter);
+  }
+});
+</script>
+</body>
+</html>
