@@ -23,12 +23,21 @@
       --blue:#4da6ff; --yellow:#ffd166;
     }
     html,body { width:100%; height:100%; background:var(--bg-base); color:var(--text-primary); font-family:'Inter',sans-serif; overflow:hidden; user-select:none; }
-    #app { display:grid; grid-template-rows:52px 1fr auto; height:100vh; }
+    #app { display:grid; grid-template-rows:52px 1fr auto; height:100vh; min-height:0; }
+    #app-bottom-stack { display:flex; flex-direction:column; border-top:1px solid var(--border); background:rgba(255,255,255,0.012); flex-shrink:0; min-height:0; }
+    #app-footer { flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:8px 18px; border-top:1px solid var(--border); background:rgba(255,255,255,0.03); }
+    #btn-open-docs { padding:6px 14px; border-radius:6px; font-size:11px; font-weight:600; border:1px solid var(--border-bright); background:rgba(124,92,252,0.12); color:var(--text-primary); cursor:pointer; font-family:'Inter',sans-serif; transition:border-color .15s,background .15s; }
+    #btn-open-docs:hover { border-color:var(--purple); background:rgba(124,92,252,0.22); color:#fff; }
 
     /* HEADER */
-    #header { display:flex; align-items:center; gap:14px; padding:0 20px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border); z-index:10; }
-    #header .logo { width:28px; height:28px; background:linear-gradient(135deg,var(--cyan),var(--purple)); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; }
-    #header h1 { font-size:15px; font-weight:600; background:linear-gradient(90deg,var(--text-primary),var(--text-secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    #header { display:flex; align-items:center; gap:12px; padding:0 16px 0 20px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border); z-index:10; flex-wrap:wrap; row-gap:6px; }
+    #header .logo { width:28px; height:28px; background:linear-gradient(135deg,var(--cyan),var(--purple)); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+    #header h1 { font-size:15px; font-weight:600; background:linear-gradient(90deg,var(--text-primary),var(--text-secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; flex-shrink:0; }
+    #header .header-loss-wrap { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:2px; }
+    #header .loss-select-label { font-size:10px; font-weight:600; letter-spacing:0.6px; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
+    #header #loss-select { min-width:128px; max-width:160px; background:rgba(255,255,255,0.06); border:1px solid var(--border-bright); border-radius:6px; color:var(--text-primary); font-size:11px; font-family:'JetBrains Mono',monospace; padding:5px 8px; cursor:pointer; outline:none; }
+    #header #loss-select:hover { border-color:var(--purple); }
+    #header #loss-select:focus { border-color:var(--cyan); }
     #header .subtitle { font-size:11px; color:var(--text-muted); margin-left:auto; font-family:'JetBrains Mono',monospace; }
     #status-badge { font-size:10px; font-family:'JetBrains Mono',monospace; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:3px 10px; color:var(--text-muted); }
 
@@ -39,8 +48,17 @@
     .panel-title { font-size:10px; font-weight:600; letter-spacing:1.2px; color:var(--text-muted); text-transform:uppercase; padding:14px 16px 10px; border-bottom:1px solid var(--border); flex-shrink:0; }
 
     /* DATA TABLE */
-    #data-panel { padding-bottom:8px; }
-    #data-table-wrap { overflow-y:auto; flex:1; padding:10px 12px 4px; }
+    #data-panel { padding-bottom:8px; min-height:0; }
+    #loss-guide-panel {
+      flex-shrink:0; padding:12px 14px 14px; border-bottom:1px solid var(--border);
+      background:rgba(124,92,252,0.06);
+    }
+    .loss-guide-head { font-size:11px; font-weight:600; letter-spacing:0.8px; color:var(--purple); margin-bottom:10px; line-height:1.35; }
+    .loss-guide-body { font-size:11px; color:var(--text-secondary); line-height:1.55; }
+    .loss-guide-body .lg-sub { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin:10px 0 4px; }
+    .loss-guide-body .lg-sub:first-of-type { margin-top:0; }
+    .loss-guide-body .lg-p { margin:0; }
+    #data-table-wrap { overflow-y:auto; flex:1; min-height:0; padding:10px 12px 4px; }
     #data-table-wrap::-webkit-scrollbar { width:4px; }
     #data-table-wrap::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
     .data-row { display:grid; grid-template-columns:22px 1fr 1fr 28px; align-items:center; gap:6px; margin-bottom:6px; }
@@ -65,18 +83,10 @@
     #btn-plot { background:linear-gradient(135deg,#7c5cfc,#4da6ff); color:#fff; box-shadow:0 4px 16px rgba(124,92,252,0.3); }
     #btn-lsrl { background:linear-gradient(135deg,var(--cyan),#06b88a); color:#021a12; box-shadow:0 4px 16px rgba(6,214,160,0.2); }
     #btn-squares { background:linear-gradient(135deg,var(--yellow),#f4a228); color:#1a1000; box-shadow:0 4px 16px rgba(255,209,102,0.2); }
-    #btn-optimize { background:linear-gradient(135deg,var(--orange),var(--pink)); color:#fff; box-shadow:0 4px 16px rgba(255,112,67,0.3); }
     #btn-reset { background:transparent; border-color:var(--border-bright); color:var(--text-secondary); margin-left:auto; }
     #btn-reset:hover { border-color:var(--pink); color:var(--pink); }
     .btn-pulse { animation:btnPulse 1.5s ease-in-out infinite; }
     @keyframes btnPulse { 0%,100%{box-shadow:0 4px 16px rgba(255,112,67,0.3);}50%{box-shadow:0 4px 30px rgba(255,112,67,0.7);} }
-
-    /* SPEED CONTROL */
-    #gd-speed-wrap { display:flex; align-items:center; gap:6px; margin-left:4px; padding:4px 10px; background:rgba(255,255,255,0.04); border:1px solid var(--border-bright); border-radius:8px; }
-    #gd-speed-wrap label { font-size:10px; color:var(--text-muted); white-space:nowrap; }
-    #gd-speed-slider { width:80px; -webkit-appearance:none; appearance:none; height:3px; border-radius:2px; background:var(--border-bright); outline:none; cursor:pointer; }
-    #gd-speed-slider::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; border-radius:50%; background:var(--purple); box-shadow:0 0 6px rgba(124,92,252,0.5); cursor:pointer; }
-    #gd-speed-val { font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--purple); min-width:32px; }
 
     /* CHART */
     #chart-panel { position:relative; flex:1; overflow:hidden; display:flex; flex-direction:column; }
@@ -129,14 +139,34 @@
     .sse-value.animating { color:var(--orange); }
     .iter-display { font-size:10px; color:var(--text-secondary); margin-top:6px; font-family:'JetBrains Mono',monospace; }
 
+    .residual-vline { stroke-width:2; stroke-linecap:round; pointer-events:none; opacity:0.85; }
+
+    /* OPTIMIZER TOOLBAR */
+    #optimizer-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:8px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
+    #optimizer-toolbar label { font-size:10px; color:var(--text-muted); white-space:nowrap; }
+    .huber-delta-controls { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .opt-slider { width:72px; -webkit-appearance:none; appearance:none; height:3px; border-radius:2px; background:var(--border-bright); outline:none; cursor:pointer; }
+    .opt-slider::-webkit-slider-thumb { -webkit-appearance:none; width:11px; height:11px; border-radius:50%; background:var(--orange); cursor:pointer; }
+    #opt-metrics { display:flex; flex-wrap:wrap; gap:12px 16px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-left:auto; }
+    #opt-metrics span { color:var(--text-primary); font-weight:600; }
+    .opt-run-btn { padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600; border:none; cursor:pointer; background:linear-gradient(135deg,var(--orange),var(--pink)); color:#fff; }
+    .opt-run-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .opt-sec-btn { padding:5px 10px; border-radius:6px; font-size:11px; font-weight:600; border:1px solid var(--border-bright); background:rgba(255,255,255,0.04); color:var(--text-secondary); cursor:pointer; }
+    .opt-sec-btn:hover { border-color:var(--purple); color:var(--purple); }
+
     /* TIMELINE */
-    #timeline-panel { border-top:1px solid var(--border); background:rgba(255,255,255,0.015); display:none; flex-direction:column; height:190px; flex-shrink:0; }
+    #timeline-panel { background:rgba(255,255,255,0.015); display:none; flex-direction:column; flex:1 1 auto; min-height:240px; height:min(38vh,280px); max-height:min(42vh,320px); }
     #timeline-panel.visible { display:flex; }
-    #timeline-inner { display:grid; grid-template-columns:1fr 260px; flex:1; overflow:hidden; }
-    #sse-chart-wrap { padding:10px 16px; display:flex; flex-direction:column; }
-    #sse-chart-title { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; }
-    #sse-svg { flex:1; width:100%; }
-    #scrubber-wrap { border-left:1px solid var(--border); padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+    #timeline-inner { display:grid; grid-template-columns:1fr 1fr 260px; flex:1; overflow:hidden; min-height:0; }
+    #loss-chart-wrap, #contour-chart-wrap { padding:8px 12px; display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--border); }
+    #contour-chart-wrap { border-right:1px solid var(--border); }
+    #loss-chart-title, #contour-chart-title { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; flex-shrink:0; }
+    #loss-svg, #contour-svg { flex:1; width:100%; min-height:80px; }
+    #scrubber-wrap { padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
+    @media (max-width:1100px) {
+      #timeline-inner { grid-template-columns:1fr; grid-template-rows:auto auto auto; }
+      #loss-chart-wrap, #contour-chart-wrap { border-right:none; border-bottom:1px solid var(--border); max-height:160px; }
+    }
     #scrubber-title { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-muted); }
     #iter-info { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); }
     #iter-info span { color:var(--text-primary); font-weight:600; }
@@ -148,8 +178,8 @@
     #iter-counter { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); white-space:nowrap; }
     #speed-btn { background:rgba(255,255,255,0.05); border:1px solid var(--border-bright); border-radius:5px; color:var(--text-secondary); font-size:10px; padding:4px 8px; cursor:pointer; font-family:'JetBrains Mono',monospace; transition:all .15s; }
     #speed-btn:hover { border-color:var(--purple); color:var(--purple); }
-    .sse-line { fill:none; stroke:url(#sseGrad); stroke-width:2; }
-    .sse-area { opacity:.12; }
+    .loss-line { fill:none; stroke:url(#lossGrad); stroke-width:2; }
+    .loss-area { opacity:.12; }
     .iter-cursor { stroke:var(--purple); stroke-width:1.5; stroke-dasharray:4,3; }
 
     /* TOAST */
@@ -166,6 +196,15 @@
   <header id="header">
     <div class="logo">LSRL</div>
     <h1>LSRL Visualizer</h1>
+    <div class="header-loss-wrap">
+      <label for="loss-select" class="loss-select-label">Loss</label>
+      <select id="loss-select">
+        <option value="mse">MSE</option>
+        <option value="mae">MAE</option>
+        <option value="huber">Huber (δ=1)</option>
+        <option value="logcosh">Log-Cosh</option>
+      </select>
+    </div>
     <div id="status-badge">ready</div>
     <span class="subtitle">Least Squares Regression – Gradient Descent</span>
   </header>
@@ -173,6 +212,10 @@
   <div id="main">
     <!-- LEFT -->
     <div class="panel" id="data-panel">
+      <div id="loss-guide-panel">
+        <div class="loss-guide-head" id="loss-guide-head"></div>
+        <div class="loss-guide-body" id="loss-guide-body"></div>
+      </div>
       <div class="panel-title">Data Points</div>
       <div class="col-headers">
         <span class="col-header">#</span><span class="col-header">x</span><span class="col-header">y</span><span class="col-header"></span>
@@ -185,15 +228,9 @@
     <div id="chart-panel">
       <div id="btn-bar">
         <button class="action-btn" id="btn-plot">Plot</button>
-        <button class="action-btn" id="btn-lsrl" disabled>Generate LSRL</button>
-        <button class="action-btn" id="btn-squares" disabled>Draw Squares</button>
-        <button class="action-btn" id="btn-optimize" disabled>Optimize</button>
-        <div id="gd-speed-wrap">
-  <button id="theme-toggle" class="action-btn" style="margin-left:auto;">Light/Dark</button>
-          <label for="gd-speed-slider">GD Speed</label>
-          <input type="range" id="gd-speed-slider" min="1" max="20" value="5" step="1" />
-          <span id="gd-speed-val">5×</span>
-        </div>
+        <button class="action-btn" id="btn-lsrl" disabled>Fit MSE (exact LSRL)</button>
+        <button class="action-btn" id="btn-squares" disabled>□ Draw Squares</button>
+        <button id="theme-toggle" class="action-btn" style="margin-left:auto;">Light/Dark</button>
         <button class="action-btn" id="btn-reset">Reset</button>
       </div>
       <svg id="chart-svg"></svg>
@@ -205,16 +242,16 @@
       <div class="panel-title">Analysis</div>
       <div class="info-section">
         <div class="info-section-title">Line of Best Fit</div>
-        <div id="equation-box" class="equation-box"><div class="placeholder-msg">Generate LSRL first</div></div>
+        <div id="equation-box" class="equation-box"><div class="placeholder-msg">Fit MSE (exact LSRL) first</div></div>
       </div>
       <div class="info-section">
         <div class="info-section-title">Residual Squares</div>
         <div id="squares-info"><div class="placeholder-msg">Draw squares to see areas</div></div>
       </div>
       <div class="info-section">
-        <div class="info-section-title">Sum of Squares (SSE)</div>
+        <div class="info-section-title" id="sse-section-title">Sum of squared errors (MSE)</div>
         <div class="sse-display">
-          <div class="sse-label">SSE</div>
+          <div class="sse-label" id="sse-label-text">SSE</div>
           <div class="sse-value" id="sse-value">—</div>
           <div class="iter-display" id="iter-display"></div>
         </div>
@@ -223,11 +260,34 @@
   </div>
 
   <!-- BOTTOM -->
+  <div id="app-bottom-stack">
   <div id="timeline-panel">
+    <div id="optimizer-toolbar">
+      <label for="lr-slider">LR</label>
+      <input type="range" id="lr-slider" class="opt-slider" min="0" max="1" value="0.45" step="0.001" title="Learning rate (log scale)" />
+      <span id="lr-val" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--orange);min-width:52px;">0.01</span>
+      <label for="sps-slider">Steps/s</label>
+      <input type="range" id="sps-slider" class="opt-slider" style="width:88px;" min="1" max="120" value="30" step="1" />
+      <span id="sps-val" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--purple);min-width:28px;">30</span>
+      <span id="huber-delta-controls" class="huber-delta-controls" style="display:none;">
+        <label for="huber-delta-slider">Huber δ</label>
+        <input type="range" id="huber-delta-slider" class="opt-slider" style="width:72px;" min="0.05" max="3" value="1" step="0.05" title="Huber threshold δ" />
+        <span id="huber-delta-val" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--cyan);min-width:28px;">1.00</span>
+      </span>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="loss-log-y" /> Log Y</label>
+      <button type="button" class="opt-run-btn" id="btn-run-gd">Run</button>
+      <button type="button" class="opt-sec-btn" id="btn-pause-gd">Pause</button>
+      <button type="button" class="opt-sec-btn" id="btn-reset-gd">Reset</button>
+      <div id="opt-metrics">Loss <span id="opt-m-loss">—</span> · m <span id="opt-m-m">—</span> · b <span id="opt-m-b">—</span> · iter <span id="opt-m-iter">0</span></div>
+    </div>
     <div id="timeline-inner">
-      <div id="sse-chart-wrap">
-        <div id="sse-chart-title">SSE vs. Iteration</div>
-        <svg id="sse-svg"></svg>
+      <div id="loss-chart-wrap">
+        <div id="loss-chart-title">Loss vs. iteration</div>
+        <svg id="loss-svg"></svg>
+      </div>
+      <div id="contour-chart-wrap">
+        <div id="contour-chart-title">Loss surface (m, b)</div>
+        <svg id="contour-svg"></svg>
       </div>
       <div id="scrubber-wrap">
         <div id="scrubber-title">Iteration Timeline</div>
@@ -245,6 +305,10 @@
       </div>
     </div>
   </div>
+  <footer id="app-footer">
+    <button type="button" id="btn-open-docs">Open documentation</button>
+  </footer>
+  </div>
 </div>
 <div id="toast"></div>
 
@@ -253,10 +317,79 @@
 const state = {
   data:[], plotted:false, lsrlComputed:false,
   lsrlM:0, lsrlB:0, currentM:0, currentB:0,
-  showSquares:false, optimizing:false,
+  showSquares:false,
   history:[], currentIter:0, playing:false,
   playTimer:null,
 };
+
+const optimizer = {
+  lossId: 'mse',
+  huberDelta: 1,
+  learningRate: 0.01,
+  stepsPerSec: 30,
+  running: false,
+  m: 0,
+  b: 0,
+  iteration: 0,
+  stepDebt: 0,
+  lastFrameTime: null,
+  rafId: null,
+  showResidualVlines: false,
+  contourDirty: true,
+  contourGrid: null,
+  mMin: 0, mMax: 1, bMin: 0, bMax: 1,
+  lastLoss: null,
+  lossLogY: false,
+  bestLossSeen: null,
+  stallIters: 0,
+};
+
+let CW, CH, xSc, ySc, svgEl, chartG, lossSvgEl, lossG, contourSvgEl, contourG;
+
+const LOSS_GUIDES = {
+  mse: {
+    title: 'Mean squared error (MSE)',
+    instruct: 'Minimize the average squared residual (y − ŷ)². The green Fit MSE button gives the exact least-squares line. Run animates gradient descent on the same loss (it stops immediately if you are already at that optimum).',
+    format: 'One pair per row: numeric x and numeric y. Use any reasonable scale; up to 10 points. Empty rows are ignored when you click Plot.',
+    works: 'Large errors count much more than small ones, so the optimum matches the usual least-squares regression line. The loss is smooth and convex in (m, b), which makes descent stable.',
+  },
+  mae: {
+    title: 'Mean absolute error (MAE)',
+    instruct: 'Minimize the average absolute residual |y − ŷ|. The green Fit MAE button runs batch gradient descent to convergence (warm-started from the MSE line). Use Run for an animated descent from the current reference.',
+    format: 'Same table as for MSE: each row is (x, y). Numbers only; Plot uses every row that has both fields filled.',
+    works: 'Outliers affect the fit less than under MSE. The loss is convex but not differentiable at zero residual, so gradient descent uses a subgradient (sign of the error).',
+  },
+  huber: {
+    title: 'Huber loss',
+    instruct: 'Behaves like squared error for small residuals and like absolute error for large ones. Adjust Huber δ in the optimizer bar; releasing the slider re-fits the reference line for that δ.',
+    format: 'Same (x, y) pairs as the other losses. No extra columns—δ is controlled by the slider when Huber is selected.',
+    works: 'Near the line, errors are squared (like MSE); far away, they grow linearly (like MAE), which limits the influence of outliers while keeping a smooth region at the center.',
+  },
+  logcosh: {
+    title: 'Log-cosh',
+    instruct: 'Uses mean(log(cosh(y − ŷ))). The green Fit Log-cosh button runs batch GD to convergence (from the MSE line), like MAE and Huber.',
+    format: 'Same dataset layout: one x and one y per row, then Plot.',
+    works: 'Gradients are tanh of the residual, so updates stay bounded. Useful when you want a twice-friendly loss that is less aggressive than squaring on big mistakes.',
+  },
+};
+
+function updateLossGuidePanel() {
+  const sel = document.getElementById('loss-select');
+  const body = document.getElementById('loss-guide-body');
+  const head = document.getElementById('loss-guide-head');
+  if (!sel || !body || !head) return;
+  const id = sel.value;
+  const g = LOSS_GUIDES[id] || LOSS_GUIDES.mse;
+  head.textContent = g.title;
+  body.innerHTML = `
+    <div class="lg-sub">What to do</div>
+    <p class="lg-p">${g.instruct}</p>
+    <div class="lg-sub">Input format</div>
+    <p class="lg-p">${g.format}</p>
+    <div class="lg-sub">How it works</div>
+    <p class="lg-p">${g.works}</p>
+  `;
+}
 
 // ── DATA TABLE ────────────────────────────────
 const tableWrap = document.getElementById('data-table-wrap');
@@ -300,11 +433,11 @@ function getTableData() {
 }
 
 [1,2,3,4,5].forEach(() => addRow());
+updateLossGuidePanel();
 document.getElementById('add-row-btn').addEventListener('click', () => addRow());
 
 // ── CHART SETUP ───────────────────────────────
 const CM = {top:36, right:28, bottom:48, left:54};
-let CW, CH, xSc, ySc, svgEl, chartG, sseSvgEl, sseG;
 
 function initChart() {
   const panel = document.getElementById('chart-panel');
@@ -322,57 +455,337 @@ function initChart() {
   bg.append('stop').attr('offset','100%').attr('stop-color','#080811');
   svg.append('rect').attr('width',svgW).attr('height',svgH).attr('fill','url(#chartBg)');
 
-  chartG = svg.append('g').attr('transform',`translate(${CM.left},${CM.top})`);
+  const marginG = svg.append('g').attr('transform', `translate(${CM.left},${CM.top})`);
+  chartG = marginG.append('g').attr('class', 'chart-zoom-layer');
   chartG.append('g').attr('class','squares-layer');
-  chartG.append('g').attr('class','connectors-layer');
   chartG.append('g').attr('class','line-layer');
+  chartG.append('g').attr('class','residual-vlines-layer');
+  chartG.append('g').attr('class','connectors-layer');
   chartG.append('g').attr('class','points-layer');
   chartG.append('g').attr('class','axis-x');
   chartG.append('g').attr('class','axis-y');
-  // axis labels
   chartG.append('text').attr('class','axis-label').attr('x',CW/2).attr('y',CH+40).attr('text-anchor','middle').text('x');
   chartG.append('text').attr('class','axis-label').attr('transform','rotate(-90)').attr('x',-CH/2).attr('y',-42).attr('text-anchor','middle').text('y');
 
   svgEl = svg;
-  initSSEChart();
 }
 
-// ── SSE MINI CHART ────────────────────────────
-function initSSEChart() {
-  const defs2 = d3.select('#sse-svg').append('defs');
-  const sg = defs2.append('linearGradient').attr('id','sseGrad').attr('x1','0%').attr('y1','0%').attr('x2','100%').attr('y2','0%');
+function ensureBottomCharts() {
+  const lossWrap = document.getElementById('loss-svg');
+  const conWrap = document.getElementById('contour-svg');
+  if (!lossWrap || !conWrap) return;
+  if (!lossWrap.querySelector('.loss-main')) {
+    d3.select('#loss-svg').selectAll('*').remove();
+    initLossChart();
+  }
+  if (!conWrap.querySelector('.contour-main')) {
+    d3.select('#contour-svg').selectAll('*').remove();
+    initContourChart();
+  }
+}
+
+function initLossChart() {
+  const defs2 = d3.select('#loss-svg').append('defs');
+  const sg = defs2.append('linearGradient').attr('id','lossGrad').attr('x1','0%').attr('y1','0%').attr('x2','100%').attr('y2','0%');
   sg.append('stop').attr('offset','0%').attr('stop-color','#7c5cfc');
   sg.append('stop').attr('offset','100%').attr('stop-color','#ff7043');
-  sseSvgEl = d3.select('#sse-svg');
-  const sm = {top:10, right:16, bottom:28, left:46};
-  sseG = sseSvgEl.append('g').attr('class','sse-main').attr('transform',`translate(${sm.left},${sm.top})`);
-  sseG.append('g').attr('class','sse-x-axis');
-  sseG.append('g').attr('class','sse-y-axis');
-  sseG.append('path').attr('class','sse-area');
-  sseG.append('path').attr('class','sse-line');
-  sseG.append('line').attr('class','iter-cursor');
+  lossSvgEl = d3.select('#loss-svg');
+  const sm = {top:10, right:12, bottom:26, left:44};
+  lossG = lossSvgEl.append('g').attr('class','loss-main').attr('transform',`translate(${sm.left},${sm.top})`);
+  lossG.append('g').attr('class','loss-x-axis');
+  lossG.append('g').attr('class','loss-y-axis');
+  lossG.append('path').attr('class','loss-area');
+  lossG.append('path').attr('class','loss-line');
+  lossG.append('circle').attr('class','loss-cursor-dot').attr('r',0);
+  lossG.append('line').attr('class','iter-cursor');
 }
 
-function renderSSEChart(idx) {
-  const wrap = document.getElementById('sse-svg');
-  const W = wrap.clientWidth, H = wrap.clientHeight;
-  const sm = {top:10, right:16, bottom:28, left:46};
-  const sw = W - sm.left - sm.right, sh = H - sm.top - sm.bottom;
+function initContourChart() {
+  contourSvgEl = d3.select('#contour-svg');
+  const cm = {top:8, right:8, bottom:22, left:30};
+  contourG = contourSvgEl.append('g').attr('class','contour-main').attr('transform',`translate(${cm.left},${cm.top})`);
+  contourG.append('g').attr('class','contour-fill-layer');
+  contourG.append('g').attr('class','contour-stroke-layer');
+  contourG.append('path').attr('class','gd-trail').attr('fill','none').attr('stroke','var(--orange)').attr('stroke-width',1.5).attr('opacity',0.9);
+  contourG.append('circle').attr('class','gd-current').attr('r',0);
+  contourG.append('g').attr('class','contour-x-axis');
+  contourG.append('g').attr('class','contour-y-axis');
+}
+
+function lrFromSlider(t) {
+  const lo = 1e-4;
+  const hi = 0.1;
+  return lo * Math.pow(hi / lo, t);
+}
+
+function lossPointValue(e, lossId, delta) {
+  const a = Math.abs(e);
+  if (lossId === 'mse') return e * e;
+  if (lossId === 'mae') return a;
+  if (lossId === 'huber') {
+    if (a <= delta) return 0.5 * e * e;
+    return delta * (a - 0.5 * delta);
+  }
+  if (lossId === 'logcosh') {
+    const ax = a;
+    return ax + Math.log1p(Math.exp(-2 * ax)) - Math.LN2;
+  }
+  return e * e;
+}
+
+function lPrime(e, lossId, delta) {
+  if (lossId === 'mse') return 2 * e;
+  if (lossId === 'mae') {
+    if (e > 0) return 1;
+    if (e < 0) return -1;
+    return 0;
+  }
+  if (lossId === 'huber') {
+    const a = Math.abs(e);
+    if (a <= delta) return e;
+    return delta * (e >= 0 ? 1 : -1);
+  }
+  if (lossId === 'logcosh') return Math.tanh(e);
+  return 2 * e;
+}
+
+function computeLossGrad(m, b, data, lossId, delta) {
+  const n = data.length;
+  if (n === 0) return { loss: 0, gradm: 0, gradb: 0 };
+  let sumL = 0;
+  let sumLpX = 0;
+  let sumLp = 0;
+  for (let i = 0; i < n; i++) {
+    const d = data[i];
+    const err = d.y - (m * d.x + b);
+    const lp = lPrime(err, lossId, delta);
+    sumL += lossPointValue(err, lossId, delta);
+    sumLpX += lp * d.x;
+    sumLp += lp;
+  }
+  const inv = 1 / n;
+  return {
+    loss: sumL * inv,
+    gradm: -inv * sumLpX,
+    gradb: -inv * sumLp,
+  };
+}
+
+function computeContourDomain(data, m0, b0) {
+  const xs = data.map(d => d.x);
+  const ys = data.map(d => d.y);
+  const xSpread = (d3.max(xs) - d3.min(xs)) || 1;
+  const ySpread = (d3.max(ys) - d3.min(ys)) || 1;
+  const mSpan = Math.max(2.2 * (ySpread / xSpread), Math.abs(m0) * 0.5 + 0.25);
+  const bSpan = Math.max(2.2 * ySpread, Math.abs(b0) * 0.5 + 0.25);
+  return {
+    mMin: m0 - mSpan,
+    mMax: m0 + mSpan,
+    bMin: b0 - bSpan,
+    bMax: b0 + bSpan,
+  };
+}
+
+function sampleLossField(data, lossId, delta, nx, ny, dom) {
+  const { mMin, mMax, bMin, bMax } = dom;
+  const values = new Float64Array(nx * ny);
+  let vmin = Infinity;
+  let vmax = -Infinity;
+  for (let j = 0; j < ny; j++) {
+    const b = bMin + (j / (ny - 1)) * (bMax - bMin);
+    for (let i = 0; i < nx; i++) {
+      const m = mMin + (i / (nx - 1)) * (mMax - mMin);
+      const { loss } = computeLossGrad(m, b, data, lossId, delta);
+      const k = j * nx + i;
+      values[k] = loss;
+      if (loss < vmin) vmin = loss;
+      if (loss > vmax) vmax = loss;
+    }
+  }
+  return { values, vmin, vmax, nx, ny, dom };
+}
+
+function rebuildContourStatic() {
+  if (!state.data || state.data.length < 2 || !state.lsrlComputed) return;
+  if (!contourG || !contourG.node()) return;
+  optimizer.contourDirty = false;
+  const dom = computeContourDomain(state.data, state.lsrlM, state.lsrlB);
+  optimizer.mMin = dom.mMin;
+  optimizer.mMax = dom.mMax;
+  optimizer.bMin = dom.bMin;
+  optimizer.bMax = dom.bMax;
+  const nx = 48;
+  const ny = 48;
+  const field = sampleLossField(state.data, optimizer.lossId, optimizer.huberDelta, nx, ny, dom);
+  const { values, vmin, vmax, nx: gnx, ny: gny } = field;
+  optimizer.contourGrid = { values, nx: gnx, ny: gny, vmin, vmax, dom };
+  const wrap = document.getElementById('contour-svg');
+  if (!wrap || !contourG || !contourG.node()) return;
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  const cm = { top: 8, right: 8, bottom: 22, left: 30 };
+  const sw = Math.max(20, W - cm.left - cm.right);
+  const sh = Math.max(20, H - cm.top - cm.bottom);
+  contourSvgEl.attr('width', W).attr('height', H);
+  contourG.attr('transform', `translate(${cm.left},${cm.top})`);
+  const xS = d3.scaleLinear().domain([dom.mMin, dom.mMax]).range([0, sw]);
+  const yS = d3.scaleLinear().domain([dom.bMin, dom.bMax]).range([sh, 0]);
+  const pathProj = d3.geoPath().projection(d3.geoTransform({
+    point(px, py) {
+      const sx = (px / (gnx - 1)) * sw;
+      const sy = (1 - py / (gny - 1)) * sh;
+      this.stream.point(sx, sy);
+    },
+  }));
+  contourG.select('.contour-fill-layer').selectAll('path').remove();
+  contourG.select('.contour-stroke-layer').selectAll('path').remove();
+  if (typeof d3.contours === 'function' && vmax > vmin + 1e-16) {
+    const thr = d3.range(12).map((t) => vmin + (t / 11) * (vmax - vmin));
+    const contourGen = d3.contours().size([gnx, gny]).smooth(false).thresholds(thr);
+    const layers = contourGen(values);
+    const nL = Math.max(layers.length - 1, 1);
+    contourG.select('.contour-fill-layer')
+      .selectAll('path.cfill')
+      .data(layers)
+      .join('path')
+      .attr('class', 'cfill')
+      .attr('d', pathProj)
+      .attr('fill', (d, i) => d3.interpolateRgb('#0a0618', '#5b21b6')(0.12 + (i / nL) * 0.78))
+      .attr('stroke', 'none')
+      .attr('opacity', 0.55);
+    contourG.select('.contour-stroke-layer')
+      .selectAll('path.cstroke')
+      .data(layers.filter((_, i) => i % 2 === 1))
+      .join('path')
+      .attr('class', 'cstroke')
+      .attr('d', pathProj)
+      .attr('fill', 'none')
+      .attr('stroke', 'rgba(255,255,255,0.14)')
+      .attr('stroke-width', 0.8);
+  }
+  const axStroke = 'rgba(255,255,255,0.1)';
+  const axText = '#44445a';
+  contourG.select('.contour-x-axis').attr('transform', `translate(0,${sh})`)
+    .call(d3.axisBottom(xS).ticks(4).tickSize(0)).select('.domain').attr('stroke', axStroke);
+  contourG.select('.contour-x-axis').selectAll('text').attr('fill', axText).attr('font-size', '8px').attr('font-family', 'JetBrains Mono');
+  contourG.select('.contour-y-axis')
+    .call(d3.axisLeft(yS).ticks(4).tickSize(0)).select('.domain').attr('stroke', axStroke);
+  contourG.select('.contour-y-axis').selectAll('text').attr('fill', axText).attr('font-size', '8px').attr('font-family', 'JetBrains Mono');
+}
+
+function renderContourTrail(idx) {
+  if (!contourG || !contourG.node() || !optimizer.contourGrid || !state.history.length) return;
+  const wrap = document.getElementById('contour-svg');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  const cm = { top: 8, right: 8, bottom: 22, left: 30 };
+  const sw = Math.max(20, W - cm.left - cm.right);
+  const sh = Math.max(20, H - cm.top - cm.bottom);
+  const { mMin, mMax, bMin, bMax } = optimizer.contourGrid.dom;
+  const xS = d3.scaleLinear().domain([mMin, mMax]).range([0, sw]);
+  const yS = d3.scaleLinear().domain([bMin, bMax]).range([sh, 0]);
   const hist = state.history.slice(0, idx + 1);
-  if (hist.length < 2) return;
-  const xS = d3.scaleLinear().domain([0, state.history.length-1]).range([0, sw]);
-  const maxSSE = d3.max(state.history, d => d.sse);
-  const yS = d3.scaleLinear().domain([0, maxSSE * 1.05]).range([sh, 0]);
-  const lineFn = d3.line().x((_,i) => xS(i)).y(d => yS(d.sse)).curve(d3.curveMonotoneX);
-  const areaFn = d3.area().x((_,i) => xS(i)).y0(sh).y1(d => yS(d.sse)).curve(d3.curveMonotoneX);
-  sseG.select('.sse-x-axis').attr('transform',`translate(0,${sh})`).call(d3.axisBottom(xS).ticks(5).tickSize(0)).select('.domain').attr('stroke','rgba(255,255,255,0.1)');
-  sseG.select('.sse-x-axis').selectAll('text').attr('fill','#44445a').attr('font-size','9px').attr('font-family','JetBrains Mono');
-  sseG.select('.sse-y-axis').call(d3.axisLeft(yS).ticks(4).tickSize(0).tickFormat(d3.format('.2s'))).select('.domain').attr('stroke','rgba(255,255,255,0.1)');
-  sseG.select('.sse-y-axis').selectAll('text').attr('fill','#44445a').attr('font-size','9px').attr('font-family','JetBrains Mono');
-  sseG.select('.sse-area').datum(hist).attr('d', areaFn).attr('fill','url(#sseGrad)');
-  sseG.select('.sse-line').datum(hist).attr('d', lineFn);
+  const lineFn = d3.line()
+    .x((d) => xS(d.m))
+    .y((d) => yS(d.b))
+    .curve(d3.curveLinear);
+  contourG.select('.gd-trail').datum(hist).attr('d', lineFn);
+  const cur = state.history[idx];
+  if (cur) {
+    contourG.select('.gd-current')
+      .attr('r', 5)
+      .attr('cx', xS(cur.m))
+      .attr('cy', yS(cur.b))
+      .attr('fill', 'var(--yellow)')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1.5);
+  }
+}
+
+function renderResidualVLines(data, m, b) {
+  const layer = chartG.select('.residual-vlines-layer');
+  if (!optimizer.showResidualVlines || !data || !data.length) {
+    layer.selectAll('line.residual-vline').remove();
+    return;
+  }
+  const absE = data.map((d) => Math.abs(d.y - (m * d.x + b)));
+  const maxA = d3.max(absE) || 1;
+  const rows = data.map((d, i) => {
+    const yhat = m * d.x + b;
+    const e = d.y - yhat;
+    const t = maxA > 0 ? Math.abs(e) / maxA : 0;
+    const color = d3.interpolateRgb('#06d6a0', '#ff4d88')(t);
+    return { x: d.x, y: d.y, yhat, color };
+  });
+  layer.selectAll('line.residual-vline')
+    .data(rows)
+    .join(
+      (enter) => enter.append('line').attr('class', 'residual-vline'),
+      (update) => update,
+      (exit) => exit.remove(),
+    )
+    .attr('x1', (d) => xSc(d.x))
+    .attr('x2', (d) => xSc(d.x))
+    .attr('y1', (d) => ySc(d.y))
+    .attr('y2', (d) => ySc(d.yhat))
+    .attr('stroke', (d) => d.color);
+}
+
+function renderLossChart(idx) {
+  const wrap = document.getElementById('loss-svg');
+  if (!wrap || !lossG || !lossG.node()) return;
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  lossSvgEl.attr('width', W).attr('height', H);
+  const sm = { top: 10, right: 12, bottom: 26, left: 44 };
+  const sw = W - sm.left - sm.right;
+  const sh = H - sm.top - sm.bottom;
+  if (sw < 4 || sh < 4) return;
+  const hist = state.history.slice(0, idx + 1);
+  if (!state.history.length) return;
+  const maxIdx = Math.max(state.history.length - 1, 1);
+  const xS = d3.scaleLinear().domain([0, maxIdx]).range([0, sw]);
+  const losses = state.history.map((d) => d.loss);
+  let minL = d3.min(losses);
+  let maxL = d3.max(losses);
+  maxL = Math.max(maxL, 1e-15);
+  if (minL === maxL) { minL *= 0.95; maxL *= 1.05 + 1e-9; }
+  const logY = document.getElementById('loss-log-y')?.checked;
+  let yS;
+  if (logY) {
+    const lo = Math.max(minL, 1e-12);
+    const hi = Math.max(maxL, lo * 1.0001);
+    yS = d3.scaleLog().domain([lo, hi]).range([sh, 0]).clamp(true);
+  } else {
+    yS = d3.scaleLinear().domain([0, maxL * 1.05]).range([sh, 0]);
+  }
+  const lineFn = d3.line()
+    .x((_, i) => xS(i))
+    .y((d) => yS(Math.max(d.loss, logY ? 1e-12 : 0)))
+    .curve(d3.curveMonotoneX);
+  const areaFn = d3.area()
+    .x((_, i) => xS(i))
+    .y0(sh)
+    .y1((d) => yS(Math.max(d.loss, logY ? 1e-12 : 0)))
+    .curve(d3.curveMonotoneX);
+  const yFmt = logY ? d3.format('.1e') : d3.format('.2s');
+  lossG.select('.loss-x-axis').attr('transform', `translate(0,${sh})`)
+    .call(d3.axisBottom(xS).ticks(4).tickSize(0)).select('.domain').attr('stroke', 'rgba(255,255,255,0.1)');
+  lossG.select('.loss-x-axis').selectAll('text').attr('fill', '#44445a').attr('font-size', '8px').attr('font-family', 'JetBrains Mono');
+  lossG.select('.loss-y-axis')
+    .call(d3.axisLeft(yS).ticks(4).tickSize(0).tickFormat(yFmt)).select('.domain').attr('stroke', 'rgba(255,255,255,0.1)');
+  lossG.select('.loss-y-axis').selectAll('text').attr('fill', '#44445a').attr('font-size', '8px').attr('font-family', 'JetBrains Mono');
+  if (hist.length >= 2) {
+    lossG.select('.loss-area').datum(hist).attr('d', areaFn).attr('fill', 'url(#lossGrad)');
+    lossG.select('.loss-line').datum(hist).attr('d', lineFn);
+  } else if (hist.length === 1) {
+    lossG.select('.loss-area').attr('d', null);
+    lossG.select('.loss-line').attr('d', null);
+  }
   const cx = xS(idx);
-  sseG.select('.iter-cursor').attr('x1',cx).attr('x2',cx).attr('y1',0).attr('y2',sh);
+  const cy = yS(Math.max(state.history[idx].loss, logY ? 1e-12 : 0));
+  lossG.select('.loss-cursor-dot').attr('cx', cx).attr('cy', cy).attr('r', 4).attr('fill', 'var(--yellow)').attr('stroke', '#fff').attr('stroke-width', 1);
+  lossG.select('.iter-cursor').attr('x1', cx).attr('x2', cx).attr('y1', 0).attr('y2', sh);
 }
 
 // ── SCALES & AXES ─────────────────────────────
@@ -584,9 +997,14 @@ function updateSquaresInfo(residuals, maxArea) {
 }
 function updateSSEDisplay(sse, iter) {
   const el = document.getElementById('sse-value');
-  el.textContent = sse < 10000 ? sse.toFixed(4) : sse.toExponential(3);
-  document.getElementById('iter-display').textContent = iter !== null ? `Iteration: ${iter}` : '';
-  el.classList.toggle('animating', iter !== null);
+  if (typeof sse === 'number' && !Number.isNaN(sse)) {
+    el.textContent = sse < 10000 ? sse.toFixed(4) : sse.toExponential(3);
+  } else if (sse === null) {
+    el.textContent = '—';
+  }
+  document.getElementById('iter-display').textContent =
+    iter !== null && iter !== undefined ? `Iteration: ${iter}` : '';
+  el.classList.toggle('animating', iter !== null && iter !== undefined);
 }
 
 // ── LSRL ─────────────────────────────────────
@@ -598,31 +1016,365 @@ function computeLSRL(data) {
   return {m, b: yMean - m*xMean};
 }
 
-// ── GRADIENT DESCENT ──────────────────────────
-function runGradientDescent(data, maxIter=400) {
-  const n = data.length;
-  const xMean = d3.mean(data,d=>d.x), yMean = d3.mean(data,d=>d.y);
-  const xStd  = d3.deviation(data,d=>d.x)||1, yStd = d3.deviation(data,d=>d.y)||1;
-  const norm  = data.map(d => ({x:(d.x-xMean)/xStd, y:(d.y-yMean)/yStd}));
-  let m = (Math.random()-.5)*6, b = (Math.random()-.5)*6;
-  const lr = 0.08;
-  const toOrig = (mn,bn) => {
-    const mO = mn*(yStd/xStd);
-    return {m:mO, b:yMean+bn*yStd-mO*xMean};
-  };
-  const sse = (mn,bn) => data.reduce((s,d,i) => { const e=norm[i].y-(mn*norm[i].x+bn); return s+(e*yStd)**2; }, 0);
-  const history = [];
-  let prevSSE = Infinity;
-  for (let iter=0; iter<maxIter; iter++) {
-    const orig = toOrig(m,b), curSSE = sse(m,b);
-    history.push({m:orig.m, b:orig.b, sse:curSSE, iter});
-    if (Math.abs(prevSSE-curSSE) < 1e-9 && iter>10) break;
-    prevSSE = curSSE;
-    const dm = -2/n * norm.reduce((s,d,i)=>s+d.x*(d.y-(m*d.x+b)),0);
-    const db = -2/n * norm.reduce((s,d,i)=>s+(d.y-(m*d.x+b)),0);
-    m -= lr*dm; b -= lr*db;
+function getSelectedLossId() {
+  const el = document.getElementById('loss-select');
+  return el ? el.value : 'mse';
+}
+
+function applyReferenceFit(m, b) {
+  state.lsrlM = m;
+  state.lsrlB = b;
+  state.currentM = m;
+  state.currentB = b;
+  state.lsrlComputed = true;
+  optimizer.m = m;
+  optimizer.b = b;
+}
+
+function updateFitButtonLabel() {
+  const btn = document.getElementById('btn-lsrl');
+  if (!btn) return;
+  const id = getSelectedLossId();
+  if (id === 'mse') btn.textContent = 'Fit MSE (exact LSRL)';
+  else if (id === 'mae') btn.textContent = 'Fit MAE (gradient descent)';
+  else if (id === 'huber') btn.textContent = 'Fit Huber (GD)';
+  else if (id === 'logcosh') btn.textContent = 'Fit Log-cosh (GD)';
+  else btn.textContent = 'Fit line';
+}
+
+function getEquationPlaceholderHtml() {
+  const id = getSelectedLossId();
+  if (id === 'mse') return '<div class="placeholder-msg">Fit MSE (exact LSRL) first</div>';
+  if (id === 'mae') return '<div class="placeholder-msg">Fit MAE (gradient descent) first</div>';
+  if (id === 'huber') return '<div class="placeholder-msg">Fit Huber (GD) first</div>';
+  if (id === 'logcosh') return '<div class="placeholder-msg">Fit Log-cosh (GD) first</div>';
+  return '<div class="placeholder-msg">Fit line first</div>';
+}
+
+function updateHuberDeltaControlsVisibility() {
+  const wrap = document.getElementById('huber-delta-controls');
+  if (!wrap) return;
+  wrap.style.display = getSelectedLossId() === 'huber' ? 'flex' : 'none';
+}
+
+function updateSsePanelTitles() {
+  const id = getSelectedLossId();
+  const sec = document.getElementById('sse-section-title');
+  const lab = document.getElementById('sse-label-text');
+  if (!sec || !lab) return;
+  if (id === 'mse') {
+    sec.textContent = 'Sum of squared errors (MSE)';
+    lab.textContent = 'SSE';
+  } else {
+    sec.textContent = 'Loss value';
+    lab.textContent = id === 'mae' ? 'MAE' : id === 'huber' ? 'Huber' : 'Log-cosh';
   }
-  return history;
+}
+
+function syncSquaresButtonLabel() {
+  const btn = document.getElementById('btn-squares');
+  if (!btn) return;
+  if (state.showSquares) {
+    btn.textContent = '□ Hide Squares';
+    return;
+  }
+  btn.textContent = getSelectedLossId() === 'mse' ? '□ Draw Squares' : '□ Squares (MSE only)';
+}
+
+function refreshUiForLossChange() {
+  updateFitButtonLabel();
+  updateHuberDeltaControlsVisibility();
+  updateSsePanelTitles();
+  syncSquaresButtonLabel();
+  updateButtonStates();
+}
+
+// ── OPTIMIZER RUN / rAF ───────────────────────
+const MAX_STEPS_PER_FRAME = 25;
+const MAX_ITER_RUN = 10000;
+const GD_TOL_GRAD = 1e-7;
+const GD_TOL_STEP = 1e-14;
+const GD_TOL_REL_LOSS = 1e-10;
+const GD_STALL_MAX = 250;
+const GD_REL_STOP_GRAD_CAP = 1e-3;
+
+/** Batch GD to minimize selected loss; warm-start from OLS (MSE) line. */
+function fitLineByGdConvergence(data, lossId, huberDelta, lr) {
+  const warm = computeLSRL(data);
+  let m = warm.m;
+  let b = warm.b;
+  let bestLossSeen = null;
+  let stallIters = 0;
+  for (let k = 0; k < MAX_ITER_RUN; k += 1) {
+    const { loss: lossBefore, gradm, gradb } = computeLossGrad(m, b, data, lossId, huberDelta);
+    const gnorm = Math.hypot(gradm, gradb);
+    const stepM = lr * gradm;
+    const stepB = lr * gradb;
+    const stepNorm = Math.max(Math.abs(stepM), Math.abs(stepB));
+    if (gnorm < GD_TOL_GRAD || stepNorm < GD_TOL_STEP) {
+      return { m, b, iterations: k, reason: 'tol' };
+    }
+    const mNew = m - stepM;
+    const bNew = b - stepB;
+    const { loss: lossAfter } = computeLossGrad(mNew, bNew, data, lossId, huberDelta);
+    const relLossStep = Math.abs(lossAfter - lossBefore) / (Math.abs(lossBefore) + 1e-12);
+    if (relLossStep < GD_TOL_REL_LOSS && gnorm < GD_REL_STOP_GRAD_CAP && k >= 1) {
+      return { m: mNew, b: bNew, iterations: k + 1, reason: 'flat' };
+    }
+    if (bestLossSeen == null || lossAfter < bestLossSeen - 1e-14) {
+      bestLossSeen = lossAfter;
+      stallIters = 0;
+    } else {
+      stallIters += 1;
+    }
+    if (stallIters >= GD_STALL_MAX) {
+      return { m: mNew, b: bNew, iterations: k + 1, reason: 'stall' };
+    }
+    m = mNew;
+    b = bNew;
+  }
+  return { m, b, iterations: MAX_ITER_RUN, reason: 'cap' };
+}
+
+function markContourDirty() {
+  optimizer.contourDirty = true;
+}
+
+function syncOptimizerMetrics(entry) {
+  document.getElementById('opt-m-loss').textContent = entry.loss < 1e4 ? entry.loss.toFixed(6) : entry.loss.toExponential(3);
+  document.getElementById('opt-m-m').textContent = entry.m.toFixed(5);
+  document.getElementById('opt-m-b').textContent = entry.b.toFixed(5);
+  document.getElementById('opt-m-iter').textContent = String(entry.iter);
+}
+
+function pushHistorySnapshot(iter, loss, m, b) {
+  state.history.push({ iter, loss, m, b });
+  const slider = document.getElementById('timeline-slider');
+  slider.max = Math.max(0, state.history.length - 1);
+  slider.value = state.history.length - 1;
+  state.currentIter = state.history.length - 1;
+  document.getElementById('iter-total').textContent = String(iter);
+}
+
+function readOptimizerControls() {
+  optimizer.lossId = document.getElementById('loss-select').value;
+  const t = parseFloat(document.getElementById('lr-slider').value);
+  optimizer.learningRate = lrFromSlider(t);
+  optimizer.stepsPerSec = parseFloat(document.getElementById('sps-slider').value);
+  optimizer.lossLogY = document.getElementById('loss-log-y').checked;
+  const hd = document.getElementById('huber-delta-slider');
+  if (hd) {
+    optimizer.huberDelta = parseFloat(hd.value);
+    const hv = document.getElementById('huber-delta-val');
+    if (hv) hv.textContent = optimizer.huberDelta.toFixed(2);
+  }
+}
+
+function formatLr(v) {
+  if (v >= 0.01) return v.toFixed(4);
+  if (v >= 0.001) return v.toFixed(5);
+  return v.toExponential(1);
+}
+
+function optimizerResetSoft() {
+  pauseGdRaf();
+  state.history = [];
+  state.currentIter = 0;
+  optimizer.iteration = 0;
+  optimizer.stepDebt = 0;
+  optimizer.lastFrameTime = null;
+  optimizer.lastLoss = null;
+  optimizer.bestLossSeen = null;
+  optimizer.stallIters = 0;
+  optimizer.m = state.lsrlM;
+  optimizer.b = state.lsrlB;
+  state.currentM = optimizer.m;
+  state.currentB = optimizer.b;
+  document.getElementById('timeline-slider').max = 0;
+  document.getElementById('timeline-slider').value = 0;
+  document.getElementById('iter-num').textContent = '0';
+  document.getElementById('iter-total').textContent = '0';
+  document.getElementById('iter-counter').textContent = '0 / 0';
+  document.getElementById('sse-at-iter').textContent = '';
+  optimizer.showResidualVlines = false;
+  renderResidualVLines(state.data, state.currentM, state.currentB);
+  if (lossG && lossG.node()) {
+    lossG.select('.loss-area').attr('d', null);
+    lossG.select('.loss-line').attr('d', null);
+    lossG.select('.loss-cursor-dot').attr('r', 0);
+    lossG.select('.iter-cursor').attr('x1', 0).attr('x2', 0);
+  }
+  if (contourG && contourG.node()) {
+    contourG.select('.gd-trail').attr('d', null);
+    contourG.select('.gd-current').attr('r', 0);
+  }
+  document.getElementById('opt-m-loss').textContent = '—';
+  document.getElementById('opt-m-m').textContent = state.lsrlComputed ? state.lsrlM.toFixed(5) : '—';
+  document.getElementById('opt-m-b').textContent = state.lsrlComputed ? state.lsrlB.toFixed(5) : '—';
+  document.getElementById('opt-m-iter').textContent = '0';
+  if (state.lsrlComputed) updateEquation(state.lsrlM, state.lsrlB);
+  document.getElementById('iter-display').textContent = '';
+}
+
+function pauseGdRaf() {
+  optimizer.running = false;
+  if (optimizer.rafId != null) {
+    cancelAnimationFrame(optimizer.rafId);
+    optimizer.rafId = null;
+  }
+  document.getElementById('btn-run-gd').disabled = false;
+  updateButtonStates();
+}
+
+function gdStepFrame(ts) {
+  if (!optimizer.running) return;
+  if (optimizer.lastFrameTime == null) {
+    optimizer.lastFrameTime = ts;
+    optimizer.rafId = requestAnimationFrame(gdStepFrame);
+    return;
+  }
+  const dt = Math.min(250, ts - optimizer.lastFrameTime);
+  optimizer.lastFrameTime = ts;
+  optimizer.stepDebt += (optimizer.stepsPerSec * dt) / 1000;
+  let steps = 0;
+  while (optimizer.stepDebt >= 1 && optimizer.running && steps < MAX_STEPS_PER_FRAME) {
+    optimizer.stepDebt -= 1;
+    steps += 1;
+    const { loss: lossBefore, gradm, gradb } = computeLossGrad(
+      optimizer.m,
+      optimizer.b,
+      state.data,
+      optimizer.lossId,
+      optimizer.huberDelta,
+    );
+    const gnorm = Math.hypot(gradm, gradb);
+    const lr = optimizer.learningRate;
+    const stepM = lr * gradm;
+    const stepB = lr * gradb;
+    const stepNorm = Math.max(Math.abs(stepM), Math.abs(stepB));
+    if (gnorm < GD_TOL_GRAD || stepNorm < GD_TOL_STEP) {
+      optimizer.running = false;
+      toast(`Converged at iteration ${optimizer.iteration} (gradient / step negligible)`, 'success');
+      setStatus('optimized');
+      break;
+    }
+    optimizer.m -= stepM;
+    optimizer.b -= stepB;
+    optimizer.iteration += 1;
+    const { loss: lossAfter } = computeLossGrad(
+      optimizer.m,
+      optimizer.b,
+      state.data,
+      optimizer.lossId,
+      optimizer.huberDelta,
+    );
+    const relLossStep = Math.abs(lossAfter - lossBefore) / (Math.abs(lossBefore) + 1e-12);
+    if (
+      relLossStep < GD_TOL_REL_LOSS
+      && gnorm < GD_REL_STOP_GRAD_CAP
+      && optimizer.iteration > 0
+    ) {
+      optimizer.running = false;
+      toast(`Converged at iteration ${optimizer.iteration} (loss nearly stationary)`, 'success');
+      setStatus('optimized');
+      break;
+    }
+    if (optimizer.bestLossSeen == null || lossAfter < optimizer.bestLossSeen - 1e-14) {
+      optimizer.bestLossSeen = lossAfter;
+      optimizer.stallIters = 0;
+    } else {
+      optimizer.stallIters += 1;
+    }
+    if (optimizer.stallIters >= GD_STALL_MAX) {
+      optimizer.running = false;
+      toast('Stopped: no improvement — try a smaller learning rate', 'success');
+      setStatus('paused');
+      break;
+    }
+    optimizer.lastLoss = lossAfter;
+    pushHistorySnapshot(optimizer.iteration, lossAfter, optimizer.m, optimizer.b);
+    state.currentM = optimizer.m;
+    state.currentB = optimizer.b;
+    renderLine(optimizer.m, optimizer.b, false);
+    renderResidualVLines(state.data, optimizer.m, optimizer.b);
+    if (state.showSquares) renderSquares(state.data, optimizer.m, optimizer.b);
+    updateEquation(optimizer.m, optimizer.b);
+    updateSSEDisplay(lossAfter, optimizer.iteration);
+    syncOptimizerMetrics({ iter: optimizer.iteration, loss: lossAfter, m: optimizer.m, b: optimizer.b });
+    renderLossChart(state.currentIter);
+    renderContourTrail(state.currentIter);
+    if (optimizer.iteration >= MAX_ITER_RUN) {
+      optimizer.running = false;
+      toast('Stopped: max iterations', 'success');
+      setStatus('paused');
+      break;
+    }
+  }
+  if (optimizer.running) {
+    optimizer.rafId = requestAnimationFrame(gdStepFrame);
+  } else {
+    optimizer.rafId = null;
+    optimizer.lastFrameTime = null;
+    document.getElementById('btn-run-gd').disabled = false;
+    updateButtonStates();
+  }
+}
+
+function startGdRun() {
+  if (!state.lsrlComputed || state.data.length < 2) return;
+  readOptimizerControls();
+  if (optimizer.lossId === 'mse') {
+    const { gradm, gradb } = computeLossGrad(
+      state.lsrlM,
+      state.lsrlB,
+      state.data,
+      'mse',
+      optimizer.huberDelta,
+    );
+    if (Math.hypot(gradm, gradb) < GD_TOL_GRAD) {
+      toast('Already at the MSE (LSRL) optimum — nothing to animate.', 'success');
+      setStatus('lsrl computed');
+      return;
+    }
+  }
+  pausePlay();
+  state.history = [];
+  optimizer.iteration = 0;
+  optimizer.m = state.lsrlM;
+  optimizer.b = state.lsrlB;
+  optimizer.lastLoss = null;
+  optimizer.bestLossSeen = null;
+  optimizer.stallIters = 0;
+  document.getElementById('timeline-slider').max = 0;
+  document.getElementById('timeline-slider').value = 0;
+  if (optimizer.contourDirty || !optimizer.contourGrid) rebuildContourStatic();
+  optimizer.showResidualVlines = true;
+  optimizer.running = true;
+  optimizer.lastFrameTime = null;
+  optimizer.stepDebt = 0;
+  document.getElementById('btn-run-gd').disabled = true;
+  setStatus('optimizing…');
+  const { loss } = computeLossGrad(
+    optimizer.m,
+    optimizer.b,
+    state.data,
+    optimizer.lossId,
+    optimizer.huberDelta,
+  );
+  optimizer.lastLoss = loss;
+  optimizer.bestLossSeen = loss;
+  pushHistorySnapshot(0, loss, optimizer.m, optimizer.b);
+  state.currentM = optimizer.m;
+  state.currentB = optimizer.b;
+  renderLine(optimizer.m, optimizer.b, false);
+  renderResidualVLines(state.data, optimizer.m, optimizer.b);
+  if (state.showSquares) renderSquares(state.data, optimizer.m, optimizer.b);
+  updateEquation(optimizer.m, optimizer.b);
+  updateSSEDisplay(loss, 0);
+  syncOptimizerMetrics({ iter: 0, loss, m: optimizer.m, b: optimizer.b });
+  renderLossChart(0);
+  renderContourTrail(0);
+  optimizer.rafId = requestAnimationFrame(gdStepFrame);
 }
 
 // ── ANIMATION & SCRUBBER ──────────────────────
@@ -631,19 +1383,26 @@ let speedIdx = 1;
 
 function setIteration(idx) {
   if (!state.history.length) return;
-  idx = Math.max(0, Math.min(state.history.length-1, idx));
+  idx = Math.max(0, Math.min(state.history.length - 1, idx));
   state.currentIter = idx;
   const e = state.history[idx];
-  state.currentM = e.m; state.currentB = e.b;
+  state.currentM = e.m;
+  state.currentB = e.b;
+  document.getElementById('sse-label-text').textContent = 'Loss';
   renderLine(e.m, e.b, false);
-  renderSquares(state.data, e.m, e.b);
+  if (state.showSquares) renderSquares(state.data, e.m, e.b);
   updateEquation(e.m, e.b);
-  updateSSEDisplay(e.sse, e.iter);
+  updateSSEDisplay(e.loss, e.iter);
+  syncOptimizerMetrics(e);
   document.getElementById('timeline-slider').value = idx;
-  document.getElementById('iter-num').textContent = e.iter;
-  document.getElementById('iter-counter').textContent = `${e.iter} / ${state.history[state.history.length-1].iter}`;
-  document.getElementById('sse-at-iter').textContent = `SSE: ${e.sse.toFixed(4)}`;
-  renderSSEChart(idx);
+  document.getElementById('iter-num').textContent = String(e.iter);
+  const last = state.history[state.history.length - 1];
+  document.getElementById('iter-counter').textContent = `${e.iter} / ${last.iter}`;
+  document.getElementById('sse-at-iter').textContent = `Loss: ${e.loss.toFixed(6)}`;
+  renderLossChart(idx);
+  renderContourTrail(idx);
+  optimizer.showResidualVlines = true;
+  renderResidualVLines(state.data, e.m, e.b);
 }
 function startPlay() {
   if (state.playing) return;
@@ -663,54 +1422,83 @@ function tickPlay() {
   state.playTimer = setTimeout(tickPlay, 100/playbackSpeeds[speedIdx]);
 }
 
-// ── GD SPEED SLIDER ───────────────────────────
-let gdStepMs = 100; // ms per iteration during animate
-const gdSlider = document.getElementById('gd-speed-slider');
-const gdVal    = document.getElementById('gd-speed-val');
-gdSlider.addEventListener('input', function() {
-  const v = parseInt(this.value);
-  gdVal.textContent = v + '×';
-  gdStepMs = Math.round(1000 / v); // speed 1 = 1000ms, speed 20 = 50ms
-});
-// init
-gdVal.textContent = gdSlider.value + '×';
-gdStepMs = Math.round(1000 / parseInt(gdSlider.value));
-
 // ── BUTTONS ───────────────────────────────────
 function updateButtonStates() {
-  document.getElementById('btn-lsrl').disabled    = !state.plotted;
-  document.getElementById('btn-squares').disabled = !state.lsrlComputed;
-  document.getElementById('btn-optimize').disabled = !state.lsrlComputed || state.optimizing;
+  document.getElementById('btn-lsrl').disabled = !state.plotted;
+  const squaresOk = state.lsrlComputed && getSelectedLossId() === 'mse';
+  document.getElementById('btn-squares').disabled = !squaresOk;
+  const canGd = state.lsrlComputed && state.data.length >= 2;
+  document.getElementById('btn-run-gd').disabled = !canGd || optimizer.running;
+  document.getElementById('btn-pause-gd').disabled = !canGd;
+  document.getElementById('btn-reset-gd').disabled = !canGd;
 }
 
 document.getElementById('btn-plot').addEventListener('click', () => {
   const data = getTableData();
   if (data.length < 2) { toast('Enter at least 2 data points','error'); return; }
-  state.data=data; state.plotted=true; state.lsrlComputed=false; state.showSquares=false; state.history=[];
-  state.currentM=0; state.currentB=0;
+  pauseGdRaf();
+  state.data = data;
+  state.plotted = true;
+  state.lsrlComputed = false;
+  state.showSquares = false;
+  state.history = [];
+  state.currentM = 0;
+  state.currentB = 0;
+  markContourDirty();
   chartG.select('.line-layer').selectAll('*').remove();
   chartG.select('.connectors-layer').selectAll('*').remove();
+  chartG.select('.residual-vlines-layer').selectAll('*').remove();
   clearSquares();
   document.getElementById('timeline-panel').classList.remove('visible');
-  document.getElementById('equation-box').innerHTML='<div class="placeholder-msg">Generate LSRL first</div>';
-  document.getElementById('squares-info').innerHTML='<div class="placeholder-msg">Draw squares to see areas</div>';
-  document.getElementById('sse-value').textContent='—';
-  document.getElementById('iter-display').textContent='';
+  document.getElementById('equation-box').innerHTML = getEquationPlaceholderHtml();
+  document.getElementById('squares-info').innerHTML = '<div class="placeholder-msg">Draw squares to see areas</div>';
+  document.getElementById('sse-value').textContent = '—';
+  updateSsePanelTitles();
+  document.getElementById('iter-display').textContent = '';
   computeScales(data);
   renderAxes();
   renderPoints(data);
-  setStatus('plotted'); updateButtonStates();
-  toast('Points plotted ✓','success');
+  setStatus('plotted');
+  refreshUiForLossChange();
+  toast('Points plotted ✓', 'success');
 });
 
 document.getElementById('btn-lsrl').addEventListener('click', () => {
-  const {m,b} = computeLSRL(state.data);
-  state.lsrlM=m; state.lsrlB=b; state.currentM=m; state.currentB=b; state.lsrlComputed=true;
+  readOptimizerControls();
+  const lid = optimizer.lossId;
+  let m;
+  let b;
+  let msg;
+  if (lid === 'mse') {
+    const o = computeLSRL(state.data);
+    m = o.m;
+    b = o.b;
+    applyReferenceFit(m, b);
+    msg = 'MSE line (LSRL) computed ✓';
+  } else {
+    const lr = optimizer.learningRate;
+    const res = fitLineByGdConvergence(state.data, lid, optimizer.huberDelta, lr);
+    m = res.m;
+    b = res.b;
+    applyReferenceFit(m, b);
+    const r = res.reason === 'stall' ? ' (stopped: try smaller LR)' : res.reason === 'cap' ? ' (iteration cap)' : '';
+    const fitNames = { mae: 'MAE', huber: 'Huber', logcosh: 'Log-cosh' };
+    msg = `${fitNames[lid] || lid} fit finished in ${res.iterations} steps${r}`;
+  }
+  markContourDirty();
   renderLine(m, b, true);
   updateEquation(m, b);
-  if (state.showSquares) renderSquares(state.data, m, b);
-  setStatus('lsrl computed'); updateButtonStates();
-  toast('LSRL generated ✓','success');
+  if (state.showSquares && lid === 'mse') renderSquares(state.data, m, b);
+  document.getElementById('timeline-panel').classList.add('visible');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      ensureBottomCharts();
+      rebuildContourStatic();
+    });
+  });
+  setStatus('reference fit');
+  refreshUiForLossChange();
+  toast(msg, 'success');
 });
 
 document.getElementById('btn-squares').addEventListener('click', () => {
@@ -722,60 +1510,43 @@ document.getElementById('btn-squares').addEventListener('click', () => {
     toast('Residual squares drawn ✓','success');
   } else {
     clearSquares();
-    btn.textContent = '□ Draw Squares';
+    syncSquaresButtonLabel();
     document.getElementById('squares-info').innerHTML='<div class="placeholder-msg">Draw squares to see areas</div>';
     document.getElementById('sse-value').textContent='—';
   }
 });
 
-document.getElementById('btn-optimize').addEventListener('click', () => {
-  if (state.optimizing) return;
-  state.optimizing = true; updateButtonStates();
-  const btn = document.getElementById('btn-optimize');
-  btn.innerHTML = '<span class="spinning">Optimizing…</span>';
-  btn.classList.add('btn-pulse');
-  setStatus('optimizing…');
-  // Ensure squares are shown during optimization
-  state.showSquares = true;
-  state.history = runGradientDescent(state.data, 400);
-  state.currentIter = 0;
-  const slider = document.getElementById('timeline-slider');
-  slider.max = state.history.length-1; slider.value = 0;
-  document.getElementById('iter-total').textContent = state.history[state.history.length-1].iter;
-  let i = 0;
-  function animStep() {
-    if (i >= state.history.length) {
-      state.optimizing=false; btn.innerHTML='Re-Optimize'; btn.classList.remove('btn-pulse'); btn.disabled=false;
-      setStatus('optimized');
-      toast(`Converged in ${state.history.length} iterations`,'success');
-      document.getElementById('timeline-panel').classList.add('visible');
-      setIteration(state.history.length-1);
-      return;
-    }
-    setIteration(i++);
-    setTimeout(animStep, gdStepMs);
-  }
-  animStep();
-});
-
 document.getElementById('btn-reset').addEventListener('click', () => {
-  state.data=[]; state.plotted=false; state.lsrlComputed=false; state.showSquares=false;
-  state.history=[]; state.optimizing=false; state.currentM=0; state.currentB=0;
+  pauseGdRaf();
+  state.data = [];
+  state.plotted = false;
+  state.lsrlComputed = false;
+  state.showSquares = false;
+  state.history = [];
+  state.currentM = 0;
+  state.currentB = 0;
+  optimizer.contourGrid = null;
+  markContourDirty();
   chartG.select('.points-layer').selectAll('*').remove();
   chartG.select('.line-layer').selectAll('*').remove();
   chartG.select('.connectors-layer').selectAll('*').remove();
+  chartG.select('.residual-vlines-layer').selectAll('*').remove();
   clearSquares();
   chartG.select('.axis-x').selectAll('*').remove();
   chartG.select('.axis-y').selectAll('*').remove();
-  document.getElementById('btn-squares').textContent='□ Draw Squares';
-  document.getElementById('btn-optimize').innerHTML='⚡ Optimize';
-  document.getElementById('btn-optimize').classList.remove('btn-pulse');
   document.getElementById('timeline-panel').classList.remove('visible');
-  document.getElementById('equation-box').innerHTML='<div class="placeholder-msg">Generate LSRL first</div>';
-  document.getElementById('squares-info').innerHTML='<div class="placeholder-msg">Draw squares to see areas</div>';
-  document.getElementById('sse-value').textContent='—'; document.getElementById('iter-display').textContent='';
+  document.getElementById('equation-box').innerHTML = getEquationPlaceholderHtml();
+  document.getElementById('squares-info').innerHTML = '<div class="placeholder-msg">Draw squares to see areas</div>';
+  document.getElementById('sse-value').textContent = '—';
+  document.getElementById('iter-display').textContent = '';
   document.getElementById('sse-value').classList.remove('animating');
-  pausePlay(); setStatus('reset'); updateButtonStates(); hideTooltip();
+  optimizerResetSoft();
+  pausePlay();
+  setStatus('reset');
+  syncSquaresButtonLabel();
+  updateSsePanelTitles();
+  updateButtonStates();
+  hideTooltip();
 });
 
 document.getElementById('timeline-slider').addEventListener('input', function() {
@@ -802,32 +1573,140 @@ function toast(msg, type='') {
 
 // ── INIT ──────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  initChart(); updateButtonStates();
-  // Theme toggle handler
+  initChart();
+  addZoom();
+  ensureBottomCharts();
+  const lrEl = document.getElementById('lr-slider');
+  document.getElementById('lr-val').textContent = formatLr(lrFromSlider(parseFloat(lrEl.value)));
+  document.getElementById('sps-val').textContent = document.getElementById('sps-slider').value;
+  readOptimizerControls();
+  refreshUiForLossChange();
+  document.getElementById('btn-open-docs').addEventListener('click', () => {
+    window.open('/docs.html', '_blank', 'noopener,noreferrer');
+  });
   document.getElementById('theme-toggle').addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
   });
-  // Apply saved theme on load
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') document.body.classList.add('light-mode');
-  document.addEventListener('keydown', e => {
-    if (document.activeElement.tagName==='INPUT') return;
-    if (e.key==='ArrowRight') setIteration(state.currentIter+1);
-    if (e.key==='ArrowLeft')  setIteration(state.currentIter-1);
-    if (e.key===' ') { e.preventDefault(); state.playing ? pausePlay() : startPlay(); }
+
+  lrEl.addEventListener('input', function () {
+    document.getElementById('lr-val').textContent = formatLr(lrFromSlider(parseFloat(this.value)));
+  });
+  document.getElementById('sps-slider').addEventListener('input', function () {
+    document.getElementById('sps-val').textContent = this.value;
+  });
+  document.getElementById('loss-select').addEventListener('change', () => {
+    updateLossGuidePanel();
+    if (state.showSquares && getSelectedLossId() !== 'mse') {
+      state.showSquares = false;
+      clearSquares();
+      document.getElementById('squares-info').innerHTML = '<div class="placeholder-msg">Draw squares to see areas</div>';
+      document.getElementById('sse-value').textContent = '—';
+    }
+    if (optimizer.running) pauseGdRaf();
+    markContourDirty();
+    if (state.lsrlComputed) {
+      ensureBottomCharts();
+      rebuildContourStatic();
+      if (state.history.length) renderContourTrail(state.currentIter);
+    }
+    refreshUiForLossChange();
+  });
+  const huberDeltaEl = document.getElementById('huber-delta-slider');
+  const onHuberDeltaVisualUpdate = () => {
+    readOptimizerControls();
+    markContourDirty();
+    if (state.lsrlComputed) {
+      ensureBottomCharts();
+      rebuildContourStatic();
+      if (state.history.length) renderContourTrail(state.currentIter);
+    }
+  };
+  huberDeltaEl.addEventListener('input', onHuberDeltaVisualUpdate);
+  huberDeltaEl.addEventListener('change', () => {
+    readOptimizerControls();
+    if (
+      state.lsrlComputed
+      && state.data.length >= 2
+      && getSelectedLossId() === 'huber'
+    ) {
+      const lr = optimizer.learningRate;
+      const res = fitLineByGdConvergence(state.data, 'huber', optimizer.huberDelta, lr);
+      applyReferenceFit(res.m, res.b);
+      renderLine(res.m, res.b, true);
+      updateEquation(res.m, res.b);
+      optimizerResetSoft();
+      markContourDirty();
+      ensureBottomCharts();
+      rebuildContourStatic();
+      setStatus('reference fit');
+      updateButtonStates();
+    } else {
+      onHuberDeltaVisualUpdate();
+    }
+  });
+  document.getElementById('loss-log-y').addEventListener('change', () => {
+    if (state.history.length) renderLossChart(state.currentIter);
+  });
+  document.getElementById('btn-run-gd').addEventListener('click', () => {
+    document.getElementById('timeline-panel').classList.add('visible');
+    ensureBottomCharts();
+    document.getElementById('sse-label-text').textContent = 'Loss';
+    startGdRun();
+  });
+  document.getElementById('btn-pause-gd').addEventListener('click', () => {
+    pauseGdRaf();
+    setStatus('paused');
+  });
+  document.getElementById('btn-reset-gd').addEventListener('click', () => {
+    pauseGdRaf();
+    optimizerResetSoft();
+    if (state.lsrlComputed) {
+      renderLine(state.lsrlM, state.lsrlB, false);
+      if (state.showSquares) renderSquares(state.data, state.lsrlM, state.lsrlB);
+    }
+    pausePlay();
+    updateSsePanelTitles();
+    setStatus('reference fit');
+    updateButtonStates();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (e.key === 'ArrowRight') setIteration(state.currentIter + 1);
+    if (e.key === 'ArrowLeft') setIteration(state.currentIter - 1);
+    if (e.key === ' ') {
+      e.preventDefault();
+      state.playing ? pausePlay() : startPlay();
+    }
   });
 });
 window.addEventListener('resize', () => {
   d3.select('#chart-svg').selectAll('*').remove();
-  d3.select('#sse-svg').selectAll('*').remove();
+  d3.select('#loss-svg').selectAll('*').remove();
+  d3.select('#contour-svg').selectAll('*').remove();
   initChart();
+  ensureBottomCharts();
   if (state.plotted) {
-    computeScales(state.data); renderAxes(); renderPoints(state.data);
+    computeScales(state.data);
+    renderAxes();
+    renderPoints(state.data);
     if (state.lsrlComputed) renderLine(state.currentM, state.currentB, false);
     if (state.showSquares) renderSquares(state.data, state.currentM, state.currentB);
-    if (state.history.length) renderSSEChart(state.currentIter);
+    if (state.lsrlComputed) {
+      markContourDirty();
+      rebuildContourStatic();
+    }
+    if (state.history.length) {
+      renderLossChart(state.currentIter);
+      renderContourTrail(state.currentIter);
+    }
+    renderResidualVLines(state.data, state.currentM, state.currentB);
   }
+  addZoom();
 });
 
 // Add zoom & pan support
@@ -839,7 +1718,6 @@ function addZoom() {
     });
   d3.select('#chart-svg').call(zoom);
 }
-addZoom();
 </script>
 </body>
 </html>
